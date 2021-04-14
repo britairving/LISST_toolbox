@@ -18,6 +18,7 @@ function LISST_processing_workflow
 %    Brita K Irving  <bkirving@alaska.edu>
 %   | Starting point
 
+
 %% 0 | USER INPUT: project and year
 cfg.project      = 'LISST_sn4025_2019_NGA_TGX201909';         % Project folder in LISST_Data
 cfg.year         = 2019;                                      % year when first measurement was taken
@@ -39,7 +40,7 @@ catch % catch and explain why script stopped
 end
 %% 2 | Configure paths and processing methods
 cfg = LISST_processing_config(cfg);
-
+keyboard
 %% 3 | step through processing workflow
 if ~skip_to_qaqc
   if ~skip_to_proc
@@ -95,4 +96,4 @@ keyboard
 
 %% 12 | Visualize
 % Plots gridded data
-% LISST_plot_data(cfg,dat,dat_bin,data);
+% LISST_plot_data_grid(cfg,dat,dat_bin,data);
