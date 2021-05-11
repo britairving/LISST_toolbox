@@ -187,6 +187,6 @@ end
 
 %% 8 | Save gridded data to .mat file
 fprintf('Saving data_grid data to %s\n',cfg.path.file_grid)
-save(cfg.path.file_grid,'cfg','data_grid','data_proc','meta_proc','-v7.3');
+save(cfg.path.file_grid,'cfg','data_grid','meta_grid','data_proc','meta_proc','-v7.3');
 
 end %% MAIN FUNCTION

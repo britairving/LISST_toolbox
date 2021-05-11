@@ -47,7 +47,7 @@ end
 if isfield(cfg,'zscfile') && numel(cfg.zscfile) == 1 && exist(fullfile(cfg.path.dir_zsc,char(cfg.zscfile)),'file')
   data_proc.zscfile(:)        = cfg.zscfile;
   cfg.proc_options.zscfile(:) = cfg.zscfile;
-elseif numel(unique(cfg.proc_options.zscfile)) == 1 && exist(fullfile(cfg.path.dir_zsc,char(cfg.proc_options.zscfile(1))),'file')
+elseif numel(unique(cfg.proc_options.zscfile)) == 1 && ~isempty(char(cfg.proc_options.zscfile(1))) && exist(fullfile(cfg.path.dir_zsc,char(cfg.proc_options.zscfile(1))),'file')
   data_proc.zscfile(:)        = cfg.zscfile;
   cfg.proc_options.zscfile(:) = cfg.zscfile;
 else
@@ -239,7 +239,7 @@ for nzscat = 1:numel(background_files)
   % ring area file.
   fprintf(' Converting raw data into corrected scattering data\n')
   try
-    zscfile = fullfile(cfg.path.dir_zsc,cfg.zscfile{nzscat});
+    zscfile = fullfile(cfg.path.dir_zsc,cfg.proc_options.zscfile{nzscat});
     [data_proc.scat(idx_zscat,:), data_proc.tau(idx_zscat), ~, ~, data_proc.cscat(idx_zscat,:)] = getscat_v2(data_proc.data(idx_zscat,:),zscfile,cfg.inst.X,cfg.path.file_ringarea);
     % % commented out April 2021 - not necessary
     % data_proc.zsc(idx_zscat,:)  = repmat(zsc,numel(idx_zscat),1); 

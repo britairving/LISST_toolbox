@@ -24,6 +24,7 @@ function [cfg, data_pre, meta_pre] = LISST_preprocess_data(cfg, data_raw, meta_r
 %
 %  Authors:
 %    Brita K Irving  <bkirving@alaska.edu>
+
 %% 1 | Initialize data and meta structures
 data_pre = data_raw; % structure containing data
 meta_pre = meta_raw; % structure containing the same fields as data with variable name descriptions and units
@@ -79,6 +80,36 @@ end
 %% 5 | Match LISST profile to CTD sequential cast number
 [cfg, data_pre, meta_pre] = LISST_match_ctd_cast(cfg, data_pre, meta_pre, ctd);
 
+%% 6 | Remove all casts with bad data
+if strcmp(cfg.project,'LISST_sn4025_2019_NGA_TGX201909')
+  % Depth was not zero'd before deployment which resulted in a ~340m depth
+  % offset, so any data below 340 m is not recoverable!
+  ucasts = unique(data_pre.cast);
+  bad_casts  = [];
+  good_casts = [];
+  for ncast = 1:numel(ucasts)
+    idx = data_pre.cast == ucasts(ncast);
+    if all(data_pre.depth(idx) == 0 | isnan(data_pre.depth(idx)))
+      bad_casts  = [bad_casts;ucasts(ncast)];
+    else
+      good_casts = [good_casts;ucasts(ncast)];
+    end
+  end
+  % Remove bad casts
+  idx_remove = ismember(data_pre.cast,bad_casts);
+  t = struct2table(data_pre);
+  t(idx_remove,:) = [];
+  % Set data to NaN where depth == 0
+  idx_remove = t.depth == 0;
+  t(idx_remove,:) = [];
+  
+  data_pre = table2struct(t,'ToScalar',true);
+  idx_remove = ismember(cfg.proc_options.cast,bad_casts);
+  cfg.proc_options.cast(idx_remove) = [];
+  cfg.proc_options.datfile(idx_remove) = [];
+  cfg.proc_options.zscfile(idx_remove) = [];
+end
+  
 %% 6 | Correct time and depth lag
 [cfg, data_pre, meta_pre] = LISST_correct_time_depth_lag(cfg,data_pre, meta_pre,ctd);
 

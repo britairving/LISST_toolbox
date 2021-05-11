@@ -133,6 +133,14 @@ cfg.proc_options.calculate_range = 1;   % 1 = calculates data using maximum and 
 % RANDOM = 0 if matrices based on scattering from spherical particles are to be used for inversion.
 cfg.proc_options.rand = 0;
 
+% Define processed filename based on model
+if cfg.proc_options.rand == 1 % non-spherical inversion model
+  model_str = 'nonspherical';
+elseif cfg.proc_options.rand == 0 % spherical inversion model
+  model_str = 'spherical';
+end
+cfg.path.file_proc     = fullfile(cfg.path.dir_proc,[cfg.project '_proc_' model_str '.mat']); % STEP 3: processed data - defined in 
+
 % -----------------------------------------------------------------------
 %% 3 | Gridding methods
 % -----------------------------------------------------------------------

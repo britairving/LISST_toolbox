@@ -77,6 +77,15 @@ for nl = 1:numel(lisst_fields)
   end
 end
   
+if strcmp(cfg.project,'LISST_sn4025_2019_NGA_TGX201909')
+  t = struct2table(lisst);
+  first_idx = find(strcmp(t.Properties.VariableNames,'mean_size'));
+  datarray  = table2array(t(:,first_idx:end));
+  idx_bad   = all(isnan(datarray),2);
+  t(idx_bad,:) = [];
+  lisst = table2struct(t,'ToScalar',true);
+end
+
 %% Format header for writing
 cols = strjoin(hdr,',');
 unit = strjoin(units,',');

@@ -238,13 +238,15 @@ for nf = 1:numel(cfg.proc_options.datfile)
   end % while cast_selected
 
   % clear axes
-  if cfg.savefig && ~isequal(chc,4) && ~isequal(chc,3)
-    
-    figname = fullfile(cfg.path.dir_figs,[cfg.project '_' erase(datname,'.DAT') '_castmatch']);
-    standard_printfig_lowrespng(figname)
+  if exist('chc','var')
+    if cfg.savefig && ~isequal(chc,4) && ~isequal(chc,3)
+      figname = fullfile(cfg.path.dir_figs,[cfg.project '_' erase(datname,'.DAT') '_castmatch']);
+      standard_printfig_lowrespng(figname)
+    end
+    cla(ax1);cla(ax2);
+    title(ax1,'');title(ax2,'');
+    clearvars chc
   end
-  cla(ax1);cla(ax2);
-  title(ax1,'');title(ax2,'');
   
 end
 if ~isempty(skip_files)

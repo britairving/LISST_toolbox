@@ -341,9 +341,6 @@ for nrm = 1:numel(rm_these)
   h1 = rmfield(h1,rmtype);
   h2 = rmfield(h2,rmtype);
   h3 = rmfield(h3,rmtype);
-  % reset axis limits
-  ax2.YLim(1) = min(nanmin([zscat.tau.surf]));
-  ax3.XLim(1) = min(nanmin([zscat.tau.surf]));
 end
 % Renumber legend
 try pause(1);end
@@ -362,35 +359,42 @@ end
 delete(h1.(wt)(remove_plots));
 delete(h2.(wt)(remove_plots));
 delete(h3.(wt)(remove_plots));
-
+% reset axis limits
+try
+  ax2.YLim(1) = min(nanmin([zscat.tau.surf]));
+  ax3.XLim(1) = min(nanmin([zscat.tau.surf]));
+end
 %% Visually highlight selected background measurements
-fprintf(' Do you want to highlight any of the background measurements on the plot?\n')
-chc1 = input('  Enter choice <1/0> ');
-if chc1
-  while chc1
-    for np = 1:numel(h1.(wt))
-      if ~isvalid(h1.(wt)(np))
-        continue
+if numel(zscat.file) > 1
+  
+  fprintf(' Do you want to highlight any of the background measurements on the plot?\n')
+  chc1 = input('  Enter choice <1/0> ');
+  if chc1
+    while chc1
+      for np = 1:numel(h1.(wt))
+        if ~isvalid(h1.(wt)(np))
+          continue
+        end
+        fprintf('   %s\n',h1.(wt)(np).DisplayName)
       end
-      fprintf('   %s\n',h1.(wt)(np).DisplayName)
+      chc = input('  Enter choice (ret to skip): ');
+      if ~isempty(chc)
+        orig_lw  = h1.(wt)(chc).LineWidth;
+        orig_clr = h1.(wt)(chc).Color;
+        h1.(wt)(chc).LineWidth = 5;
+        h1.(wt)(chc).Color = 'r';
+        uistack(h1.(wt)(chc),'top');
+        chc1 = input('Do you want to highlight anymore of the background measurements? <1/0> ');
+        % reset to original width and color
+        h1.(wt)(chc).LineWidth = orig_lw;
+        h1.(wt)(chc).Color     = orig_clr;
+      else
+        chc1 = 0;
+      end
     end
-    chc = input('  Enter choice (ret to skip): ');
-    if ~isempty(chc)
-      orig_lw  = h1.(wt)(chc).LineWidth;
-      orig_clr = h1.(wt)(chc).Color;
-      h1.(wt)(chc).LineWidth = 5;
-      h1.(wt)(chc).Color = 'r';
-      uistack(h1.(wt)(chc),'top');
-      chc1 = input('Do you want to highlight anymore of the background measurements? <1/0> ');
-      % reset to original width and color
-      h1.(wt)(chc).LineWidth = orig_lw;
-      h1.(wt)(chc).Color     = orig_clr;
-    else
-      chc1 = 0;
-    end
-  end
-  chc1 = 1;
-end % highlight selected backscatter files on plot
+    chc1 = 1;
+  end % highlight selected backscatter files on plot
+end
 
 
 %% Remove files
@@ -575,25 +579,33 @@ while ~done_method
     case 5 % SINGLE FILE
       cfg.proc_options.zscat_choice = ['single' wt 'zscat'];
       done_single_file = 0;
-      while ~done_single_file
-        for nz = 1:numel(zscat.file)
-          fprintf('  <%d> %s\n',nz,zscat.file{nz})
+      if numel(zscat.file) == 1
+        zscatname = zscat.file{1};
+        cfg.proc_options.zscfile(:)       = {zscatname};
+        downcasts.zscfile(:) = {zscatname};
+        done_single_file = 1;
+      else
+        while ~done_single_file
+          for nz = 1:numel(zscat.file)
+            fprintf('  <%d> %s\n',nz,zscat.file{nz})
+          end
+          chc_file = input(' Enter choice: ');
+          try
+            zscatname = zscat.file{chc_file};
+            cfg.proc_options.zscfile(:)       = {zscatname};
+            downcasts.zscfile(:) = {zscatname};
+            done_single_file = 1;
+          catch
+            fprintf(' could not assign choice\n')
+            done_single_file = 0;
+          end
         end
-        chc_file = input(' Enter choice: ');
-        try
-          zscatname = zscat.file{chc_file};
-          cfg.proc_options.zscfile(:)       = {zscatname};
-          downcasts.zscfile(:) = {zscatname};
-          done_single_file = 1;
-        catch
-          fprintf(' could not assign choice\n')
-          done_single_file = 0;
-        end
+        % update figure
+        h1.(wt)(chc_file).LineWidth = 5;
+        h1.(wt)(chc_file).Color = 'k';
+        h1.(wt)(chc_file).DisplayName = ['Selected: ' h1.(wt)(chc_file).DisplayName];
       end
-      % update figure
-      h1.(wt)(chc_file).LineWidth = 5;
-      h1.(wt)(chc_file).Color = 'k';
-      h1.(wt)(chc_file).DisplayName = ['Selected: ' h1.(wt)(chc_file).DisplayName];
+
       % save figure
       if cfg.savefig
         figname = fullfile(cfg.path.dir_figs,[cfg.project '_background_scatter_measurements_selected']);
