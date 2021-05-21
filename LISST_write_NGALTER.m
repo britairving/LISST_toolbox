@@ -108,7 +108,8 @@ if fileID < 0
 end
 
 fprintf(fileID,'%s\n',cols); % write header
-fprintf(fileID,'%s\n',unit); % write units
+% Removed May 2021 after feedback from Chris Turner at AXIOM Data Science
+% fprintf(fileID,'%s\n',unit); % write units
 fprintf(fileID,fmt,lisst_write{:});      % write data
 fclose(fileID);                 % close file
 % To troubleshoot why not printing correctly, comment above and just print to screen
