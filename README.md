@@ -1,5 +1,6 @@
 # Welcome to the LISST_toolbox wiki!
 This toolbox was created to read, process, plot, and write data from profiling LISST (Laser In-Situ Scattering and Transmissometry) instruments manufactured by Sequoia Scientific, Inc.
+Currently, the toolbox has only been used to process LISST-Deep Type B and Type C instruments. 
 
 
 ***
