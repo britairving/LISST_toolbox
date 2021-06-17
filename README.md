@@ -2,11 +2,14 @@
 This toolbox was created to read, process, plot, and write data from profiling LISST (Laser In-Situ Scattering and Transmissometry) instruments manufactured by Sequoia Scientific, Inc.
 Currently, the toolbox has only been used to process LISST-Deep Type B and Type C instruments. 
 
-
 ***
+# Setup
+See Setup wiki page for details on how to organize your data and configuration scripts to utilize this toolbox. 
+
+https://github.com/britairving/LISST_toolbox/wiki/Setup
 
 # Table of Contents
-Before running this toolbox, you must organize your data as described in LISST_processing_config.m and configure your project in a script [project]\_config.m, where "project" is the unique name of your project. 
+Before running this toolbox, you must organize your data as described in LISST_processing_config.m and configure your project in a script [project]\_config.m, where "project" is the unique name of your project. See the setup wiki page for more details.
 ## LISST_processing_workflow.m 
 wrapper script that calls all subsequent scripts
 
@@ -79,3 +82,4 @@ _Brita Irving, LISST_toolbox, (2021), GitHub repository, https://github.com/brit
 * Sequoia Scientific, Inc., 2008. Measuring VSF with LISST-100. http://www.sequoiasci.com/article/measuring-absolute-vsf-with-lisst-100/
 
 * Sequoia Scientific, Inc., 2015. Processing LISST-100 and LISST-100X data in MATLAB. https://www.sequoiasci.com/article/processing-lisst-100-and-lisst-100x-data-in-matlab/.
+* Jean-Pascal Rueff (2021). Click-n'-drag plot https://www.mathworks.com/matlabcentral/fileexchange/5751-click-n-drag-plot, MATLAB Central File Exchange. Retrieved June 14, 2021.
