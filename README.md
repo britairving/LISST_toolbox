@@ -15,22 +15,23 @@ Before running this toolbox, you must organize your data as described in LISST_p
 wrapper script that calls all subsequent scripts
 
 ### [project]\_config.m
-"project" is the unique name of your project. For example, LISST_[serial_number]\_[year]\_[experiment]\_[cruiseID] so for the 2018 EXPORTS experiment in the North Pacific, the project name is LISST_sn4025_2018_EXPORTS_SR201812. 
-Define metadata used in file header (SeaBASS), instrument specifications, ctd type, and available background files. 
+See Setup wiki for information on how to set up this configuration script.
+* Defines metadata used in file header (SeaBASS), instrument specifications, ctd type, and available background files. 
 
 ### LISST_processing_config.m 
-Builds paths to LISST data and instrument files based on expected folder hierarchy.
-Reads/defines instrument information important for data processing and metadata storage.
-Aside from path_length, and inversion model used to process data, variables are read from instrument files lisst.ini and InstrumentData.txt using paths built in the beginning part of this script.
-Defines data processing model (spherical or random shaped particles), and grid settings.
-Defines QC flags and defines automatic QC tests.
+* Builds paths to LISST data and instrument files based on expected folder hierarchy
+* Reads/defines instrument information important for data processing and metadata storage
+* Aside from path_length, and inversion model used to process data, variables are read from instrument files lisst.ini and InstrumentData.txt using paths built in the beginning part of this script
+* Defines data processing model (spherical or random shaped particles), and grid settings
+* Defines QC flags 
+* Defines automatic QC tests.
 
 ### LISST_read_raw_data.m 
-Defines structures "meta_raw" and "data_raw".
-Converts raw data (*.DAT) files in cfg.path.dir_raw using Sequoia's tt2mat.m script.
+* Defines structures "meta_raw" and "data_raw"
+* Converts raw data (*.DAT) files in cfg.path.dir_raw using Sequoia's tt2mat.m script
 
 ### LISST_write_Level1.m
-Writes raw data in ascii format.
+* Writes raw data in ascii format.
 
 ### LISST_preprocess_data.m
 * Defines structures "meta_pre" and "data_pre"
@@ -51,7 +52,8 @@ Writes raw data in ascii format.
 * Calculates other parameters such as volume distribution, particle size distribution, mean particle size, forward scatter coefficient, beam attenuation, etc. 
 
 ### LISST_data_qaqc_auto.m
-Performs automated quality control on processed LISST data. Performs qc tests described in manual and defined in LISST_processing_config.m, as well as basic number distribution test from in InLineAnaylsis processLISST.m script.
+* Performs automated quality control on processed LISST data
+* Performs qc tests described in manual and defined in LISST_processing_config.m
 
 ### LISST_grid_data.m
 * Defines structures "meta_grid" and "data_grid"
