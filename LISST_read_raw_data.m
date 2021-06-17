@@ -91,7 +91,7 @@ end
 
 %% 5 | Save data to .mat file
 if ~cfg.testing % only save if not in testing mode
-  fprintf('Saving processed LISST data to %s\n',cfg.path.file_raw)
+  fprintf('Saving raw LISST data to %s\n',cfg.path.file_raw)
   save(cfg.path.file_raw,'cfg','data_raw','meta_raw','-v7.3');
 end
 

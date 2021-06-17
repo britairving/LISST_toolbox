@@ -32,6 +32,10 @@ meta_pre = meta_raw; % structure containing the same fields as data with variabl
 %% 2 | Calculate date
 fprintf('Calculating date\n')
 data_pre.date     = datenumfromdata(cfg.year,data_pre.data(:,39:40));
+if strcmp(cfg.project,'LISST_sn4041_2018_ASGARD_SKQ201813S')
+  idx_2019 = year(data_pre.date) == 2019;
+  data_pre.date(idx_2019) = data_pre.date(idx_2019) - datenum(1,0,0);
+end
 data_pre.datetime = datetime(data_pre.date,'ConvertFrom','datenum');
 
 % update meta
@@ -58,6 +62,7 @@ meta_pre.temp.unit  = 'degC';
 meta_pre.depth.name = 'depth calibrated using factory supplied constants from LISST.INI file';
 meta_pre.depth.unit = 'm';
 
+
 %% 4 | Read CTD data
 if exist(cfg.path.file_ctddata,'file')
   fprintf('Loading CTD data from %s\n',cfg.path.file_ctddata)
@@ -81,7 +86,7 @@ end
 [cfg, data_pre, meta_pre] = LISST_match_ctd_cast(cfg, data_pre, meta_pre, ctd);
 
 %% 6 | Remove all casts with bad data
-if strcmp(cfg.project,'LISST_sn4025_2019_NGA_TGX201909')
+if strcmp(cfg.project,'LISST_sn4025_2019_NGA_TGX201909') || strcmp(cfg.project,'LISST_sn4025_2017_ASGARD_SKQ201709S')
   % Depth was not zero'd before deployment which resulted in a ~340m depth
   % offset, so any data below 340 m is not recoverable!
   ucasts = unique(data_pre.cast);
@@ -95,27 +100,57 @@ if strcmp(cfg.project,'LISST_sn4025_2019_NGA_TGX201909')
       good_casts = [good_casts;ucasts(ncast)];
     end
   end
-  % Remove bad casts
-  idx_remove = ismember(data_pre.cast,bad_casts);
-  t = struct2table(data_pre);
-  t(idx_remove,:) = [];
-  % Set data to NaN where depth == 0
-  idx_remove = t.depth == 0;
-  t(idx_remove,:) = [];
-  
-  data_pre = table2struct(t,'ToScalar',true);
-  idx_remove = ismember(cfg.proc_options.cast,bad_casts);
-  cfg.proc_options.cast(idx_remove) = [];
-  cfg.proc_options.datfile(idx_remove) = [];
-  cfg.proc_options.zscfile(idx_remove) = [];
+  % if any casts were identified as bad... remove those casts
+  if ~isempty(bad_casts)
+    % Move raw files to new folder
+    idx_rm_casts = ismember(data_pre.cast,bad_casts);
+    move_datfiles = unique(data_pre.datfile(idx_rm_casts));
+    zero_dir = fullfile(cfg.path.dir_raw,'_depth_all_zero');
+    if ~isdir(zero_dir)
+      mkdir(zero_dir)
+    end
+    
+    for nrm = 1:numel(move_datfiles)
+      if exist(fullfile(cfg.path.dir_raw,move_datfiles{nrm}),'file')
+        movefile(fullfile(cfg.path.dir_raw,move_datfiles{nrm}),fullfile(zero_dir,move_datfiles{nrm}));
+      elseif exist(fullfile(zero_dir,move_datfiles{nrm}),'file')
+        fprintf('%s already in "_depth_all_zero" folder\n',move_datfiles{nrm})
+      else
+        fprintf('could not locate %s...\n',move_datfiles{nrm})
+        keyboard
+      end
+    end
+    
+    % Remove bad casts
+    idx_remove = ismember(data_pre.cast,bad_casts);
+    t = struct2table(data_pre);
+    t(idx_remove,:) = [];
+    % Set data to NaN where depth == 0
+    idx_remove = t.depth == 0;
+    t(idx_remove,:) = [];
+    
+    data_pre = table2struct(t,'ToScalar',true);
+    idx_remove = ismember(cfg.proc_options.cast,bad_casts);
+    cfg.proc_options.cast(idx_remove) = [];
+    cfg.proc_options.datfile(idx_remove) = [];
+    cfg.proc_options.zscfile(idx_remove) = [];
+    
+  else
+    % Set data to NaN where depth == 0
+    t = struct2table(data_pre);
+    idx_remove = t.depth == 0;
+    t(idx_remove,:) = [];
+    data_pre = table2struct(t,'ToScalar',true);
+  end
 end
+
   
 %% 6 | Correct time and depth lag
 [cfg, data_pre, meta_pre] = LISST_correct_time_depth_lag(cfg,data_pre, meta_pre,ctd);
 
 %% 7 | Limit data to downcast
 [cfg, data_pre, meta_pre] = LISST_identify_downcast(cfg,data_pre,meta_pre,ctd);
-
+keyboard
 %% 8 | Save data_pre and meta_pre structures 
 fprintf('Saving preprocessed data to file: %s\n',cfg.path.file_pre)
 save(cfg.path.file_pre,'cfg','data_pre','meta_pre');

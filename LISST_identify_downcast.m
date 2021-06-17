@@ -87,13 +87,16 @@ for nf = 1:numel(cfg.proc_options.cast)
   catch
     htext2 = text(ax1,0.9,0.10,'- LISST','Color','k','units','normalized','FontWeight','bold','BackgroundColor','w');
   end
+  if strcmp(cfg.project,'LISST_sn4025_2017_ASGARD_SKQ201709S')
+    xlim auto;
+  end
+  
   %% FIND DOWNCAST - EITHER BY LOADING, AUTOMATIC DETECTION, OR MANUALLY
   %% 1 | Load previous entries
   if ismember(ncast,downcasts.cast)
     ic = find(downcasts.cast == ncast); % find index of matching cast
     if ~isequal(downcasts.length_cast(ic),length(idx_lisst))
       fprintf('length of cast #%d does not match... remove from file: %s\n',ncast,cfg.path.file_downcast)
-      keyboard
       find_downcast = 1;
     else
       if numel(ic) > 1 && all(isequal(downcasts.cast(ic),downcasts.cast(ic(1))))
@@ -132,17 +135,20 @@ for nf = 1:numel(cfg.proc_options.cast)
     % fully processed (i.e. binned and only downcast) but they likely have
     % already removed the soaking period, so base limit based on that
     % assumption.
-    idx_afterctd = find(lisst_time >= ctd_date(1),1);
-    [~,imax] = max(smo_lisst);
-    % Catch if stays at bottom for more than a few minutes - if so, try and
-    % identify when ctd hits the deepest depth
-    max_depth = smo_lisst(imax);
-    idx_atdeepest = find(smo_lisst >= max_depth-2 & smo_lisst <= max_depth);
-    min_atdeepest = etime(datevec(lisst_time(idx_atdeepest(end))), datevec(lisst_time(idx_atdeepest(1))))/60; % seconds to minutes
-    if min_atdeepest > 1
-      imax = find(smo_lisst > max_depth-1,1,'first');
+    try
+      idx_afterctd = find(lisst_time >= ctd_date(1),1);
+      [~,imax] = max(smo_lisst);
+      % Catch if stays at bottom for more than a few minutes - if so, try and
+      % identify when ctd hits the deepest depth
+      max_depth = smo_lisst(imax);
+      idx_atdeepest = find(smo_lisst >= max_depth-2 & smo_lisst <= max_depth);
+      min_atdeepest = etime(datevec(lisst_time(idx_atdeepest(end))), datevec(lisst_time(idx_atdeepest(1))))/60; % seconds to minutes
+      if min_atdeepest > 1
+        imax = find(smo_lisst > max_depth-1,1,'first');
+      end
+    catch
+      keyboard
     end
-    
     idx_approximate_downcast = idx_afterctd:imax;
     % Returns 0.5 for turning point, 1 for downcast, 0 for upcast
     try
@@ -163,6 +169,7 @@ for nf = 1:numel(cfg.proc_options.cast)
     catch
       hp = plot(ax1,lisst_time,smo_lisst,'m-','LineWidth',3,'DisplayName','LISST downcast');
     end
+    
     %% Decide if downcast is correct. If not, select manually
     pchc = input('Is the highlighted profile correct? <1/0> ');
     if isempty(pchc) || pchc == 1 % Default to YES if user hits <enter>

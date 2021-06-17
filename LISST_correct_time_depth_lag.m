@@ -8,6 +8,9 @@ function [cfg, data_pre, meta_pre] = LISST_correct_time_depth_lag(cfg,data_pre,m
 % %    Project specific since ctd data formatting is different.
 % %
 % %  Refereces:
+% %  Jean-Pascal Rueff (2021). Click-n'-drag plot %
+% %  (https://www.mathworks.com/matlabcentral/fileexchange/5751-click-n-drag-plot),
+% %  MATLAB Central File Exchange. Retrieved June 14, 2021.
 % %
 % %  Authors:
 % %    Brita K Irving  <bkirving@alaska.edu>
@@ -15,6 +18,7 @@ function [cfg, data_pre, meta_pre] = LISST_correct_time_depth_lag(cfg,data_pre,m
 %% 0 | Set up base structure
 close all
 dbstop if error
+cfg.savefig = 0;
 auto_methods = 2;
 %% Initialize new variables
 data_pre.depth_orig = data_pre.depth;
@@ -59,6 +63,7 @@ end
 makefig; ax1 = gca;
 % Loop through casts
 for nf = 1:numel(cfg.proc_options.cast)
+
   % Reset switches
   skip_auto = 0;
   ncnt_auto = 1;
@@ -129,12 +134,18 @@ for nf = 1:numel(cfg.proc_options.cast)
     dlag2            = ctdlag.depth2_lag(ic);
     
     % Correct depth for lag assuming linear drift
-    depth_bin_estimate = 1:1:fix(max(smo_lisst));
-    depth_lag_estimate = interp1([dlag_depth1 dlag_depth2],[dlag1 dlag2],depth_bin_estimate);
-    depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
-    depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
-    depth_cor =  smo_lisst + depth_lag;
-    
+    try
+      depth_bin_estimate = 0:1:fix(max(smo_lisst));
+      if depth_bin_estimate == 0
+        depth_bin_estimate = 0:1;
+      end
+      depth_lag_estimate = interp1([dlag_depth1 dlag_depth2],[dlag1 dlag2],depth_bin_estimate,'linear','extrap');
+      depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
+      depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
+      depth_cor =  smo_lisst + depth_lag;
+    catch
+      keyboard
+    end
     % time lag - convert from seconds to datenum (days)
     time_difference = time_lag_seconds./60./60./24; % convert from seconds to datenum
     lisst_time_cor  = lisst_time + time_difference;
@@ -160,55 +171,54 @@ for nf = 1:numel(cfg.proc_options.cast)
     while ~auto_done
       switch ncnt_auto
         case 1
-          %% Automatically calculate lag by interpolating depth, then time
-          % STEP1 | try to interpolate depth by time (this may not work if there
-          % is a time lag)
-          % interpolate by time - if this is the first step, assumes no time lag
-          [~,iu] = unique(ctd_date);
-          lisst_interp_d = interp1(ctd_date(iu),smo_ctd(iu),lisst_time);
-          % plot(gca,lisst_time,lisst_interp_d,'*')
-          [~,imaxlisst] = nanmax(smo_lisst);
-          [~,iminlisst] = nanmin(smo_lisst(1:imaxlisst));
-          iminlisst = iminlisst+fix(imaxlisst/30);% don't choose the absolute minimum, because that could be during a soak with noisy data, so select a few meteres below
-          
-          dlag_depth1 = smo_lisst(iminlisst);
-          dlag_depth2 = smo_lisst(imaxlisst);
-          dlag1 = lisst_interp_d(iminlisst) - smo_lisst(iminlisst);
-          dlag2 = lisst_interp_d(imaxlisst) - smo_lisst(imaxlisst);
-          
-          % Correct depth for lag assuming linear drift
-          depth_bin_estimate = 1:1:fix(smo_lisst(imaxlisst));
-          depth_lag_estimate = interp1([dlag_depth1 dlag_depth2],[dlag1 dlag2],depth_bin_estimate);
-          depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
-          depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
-          depth_cor =  smo_lisst + depth_lag;
-          
-          %plot(gca,lisst_time,depth_cor,'*')
-          
-          % STEP2 | Interpolate by time by depth
-          [~,imaxctd]  = max(smo_ctd);
-          [~,iminctd]  = min(smo_ctd(1:imaxctd));
-          
-          idx_down_ctd = iminctd:imaxctd;
-          [~,iuctd]    = unique(smo_ctd(idx_down_ctd));
-          iuctd = idx_down_ctd(iuctd);
-          
-          [~,imaxlisst] = max(depth_cor);
-          [~,iminlisst] = min(depth_cor(1:imaxlisst));
-          
-          idx_down_lisst = iminlisst:imaxlisst;
-          [~,iulisst,iorig] = unique(depth_cor(idx_down_lisst));
-          iulisst = idx_down_lisst(iulisst);
-          
-          lisst_interp_t = interp1(smo_ctd(iuctd),ctd_date(iuctd),depth_cor(iulisst));
-          
-          % Calculate time difference
-          time_difference  = nanmedian(lisst_interp_t - lisst_time(iulisst));
-          lisst_time_cor   = lisst_time + time_difference;
-          time_lag_seconds = time_difference.*60.*60.*24; % convert from datenum to seconds
-          
-          
           try
+            %% Automatically calculate lag by interpolating depth, then time
+            % STEP1 | try to interpolate depth by time (this may not work if there
+            % is a time lag)
+            % interpolate by time - if this is the first step, assumes no time lag
+            [~,iu] = unique(ctd_date);
+            lisst_interp_d = interp1(ctd_date(iu),smo_ctd(iu),lisst_time);
+            % plot(gca,lisst_time,lisst_interp_d,'*')
+            [~,imaxlisst] = nanmax(smo_lisst);
+            [~,iminlisst] = nanmin(smo_lisst(1:imaxlisst));
+            iminlisst = iminlisst+fix(imaxlisst/30);% don't choose the absolute minimum, because that could be during a soak with noisy data, so select a few meteres below
+            
+            dlag_depth1 = smo_lisst(iminlisst);
+            dlag_depth2 = smo_lisst(imaxlisst);
+            dlag1 = lisst_interp_d(iminlisst) - smo_lisst(iminlisst);
+            dlag2 = lisst_interp_d(imaxlisst) - smo_lisst(imaxlisst);
+            
+            % Correct depth for lag assuming linear drift
+            depth_bin_estimate = 1:1:fix(smo_lisst(imaxlisst));
+            depth_lag_estimate = interp1([dlag_depth1 dlag_depth2],[dlag1 dlag2],depth_bin_estimate);
+            depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
+            depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
+            depth_cor =  smo_lisst + depth_lag;
+            
+            %plot(gca,lisst_time,depth_cor,'*')
+            
+            % STEP2 | Interpolate by time by depth
+            [~,imaxctd]  = max(smo_ctd);
+            [~,iminctd]  = min(smo_ctd(1:imaxctd));
+            
+            idx_down_ctd = iminctd:imaxctd;
+            [~,iuctd]    = unique(smo_ctd(idx_down_ctd));
+            iuctd = idx_down_ctd(iuctd);
+            
+            [~,imaxlisst] = max(depth_cor);
+            [~,iminlisst] = min(depth_cor(1:imaxlisst));
+            
+            idx_down_lisst = iminlisst:imaxlisst;
+            [~,iulisst,iorig] = unique(depth_cor(idx_down_lisst));
+            iulisst = idx_down_lisst(iulisst);
+            
+            lisst_interp_t = interp1(smo_ctd(iuctd),ctd_date(iuctd),depth_cor(iulisst));
+            
+            % Calculate time difference
+            time_difference  = nanmedian(lisst_interp_t - lisst_time(iulisst));
+            lisst_time_cor   = lisst_time + time_difference;
+            time_lag_seconds = time_difference.*60.*60.*24; % convert from datenum to seconds
+            
             % STEP3 | Interpolate depth by time now
             lisst_interp_d = interp1(ctd_date,smo_ctd,lisst_time_cor);
             
@@ -246,56 +256,60 @@ for nf = 1:numel(cfg.proc_options.cast)
           %plot(gca,lisst_time_cor,depth_cor,'y.')
         case 2
           %% Automatically detect turning points
-          for profiler = 1:2
-            if profiler == 1
-              time = lisst_time;
-              depth = smo_lisst;
-            elseif profiler == 2
-              time = ctd_date;
-              depth = smo_ctd;
+          try
+            for profiler = 1:2
+              if profiler == 1
+                time = lisst_time;
+                depth = smo_lisst;
+              elseif profiler == 2
+                time = ctd_date;
+                depth = smo_ctd;
+              end
+              try
+                TP = find_turning_points(time,depth);
+              catch
+                keyboard
+              end
+              if profiler == 1 %% LISST
+                tpLISST = TP;
+                [~,imaxLISST] = max(smo_lisst(tpLISST));
+                tpLISST = [tpLISST(imaxLISST) find(isfinite(smo_lisst),1,'last')];
+              elseif profiler == 2 %% CTD
+                tpCTD   = TP;
+                [~,imaxCTD] = max(smo_ctd(tpCTD));
+                tpCTD = [tpCTD(imaxCTD)  find(isfinite(smo_ctd),1,'last')];
+              end
+              if isempty(TP)
+                skip_auto = 1;
+                select_manually = 1;
+              end
             end
-            try
-              TP = find_turning_points(time,depth);
-            catch
-              keyboard
-            end
-            if profiler == 1 %% LISST
-              tpLISST = TP;
-              [~,imaxLISST] = max(smo_lisst(tpLISST));
-              tpLISST = [tpLISST(imaxLISST) find(isfinite(smo_lisst),1,'last')];
-            elseif profiler == 2 %% CTD
-              tpCTD   = TP;
-              [~,imaxCTD] = max(smo_ctd(tpCTD));
-              tpCTD = [tpCTD(imaxCTD)  find(isfinite(smo_ctd),1,'last')];
-            end
-            if isempty(TP)
-              skip_auto = 1;
-              select_manually = 1;
-            end
+            
+            
+            % Calculate lag using automatically selected points
+            % time lag
+            time_difference  = ctd_date(tpCTD(1)) - lisst_time(tpLISST(1));
+            lisst_time_cor   = lisst_time + time_difference;
+            time_lag_seconds = time_difference.*60.*60.*24; % convert from datenum to seconds
+            % depth lag
+            dlag1       = smo_ctd(tpCTD(1)) - smo_lisst(tpLISST(1));
+            dlag2       = smo_ctd(tpCTD(2)) - smo_lisst(tpLISST(2));
+            dlag_depth1 = smo_lisst(tpLISST(1));
+            dlag_depth2 = smo_lisst(tpLISST(2));
+            
+            % Correct depth for lag assuming linear drift
+            depth_bin_estimate = 0:1:fix(max(smo_lisst));
+            depth_lag_estimate = interp1([dlag_depth1 dlag_depth2],[dlag1 dlag2],depth_bin_estimate);
+            depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
+            depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
+            depth_cor =  smo_lisst + depth_lag;
+            
+            h1 = plot(ax1,lisst_time(tpLISST), smo_lisst(tpLISST), 'kp', 'markerfacecolor', [0.4 0.4 0.4],'markersize', 10,'DisplayName','matching LISST');
+            hc = plot(ax1,ctd_date(tpCTD), smo_ctd(tpCTD), 'ks', 'markerfacecolor', 'b','markersize', 10,'DisplayName','matching CTD');
+          catch
+            select_manually = 1;
+            break
           end
-          
-          
-          % Calculate lag using automatically selected points
-          % time lag
-          time_difference  = ctd_date(tpCTD(1)) - lisst_time(tpLISST(1));
-          lisst_time_cor   = lisst_time + time_difference;
-          time_lag_seconds = time_difference.*60.*60.*24; % convert from datenum to seconds
-          % depth lag
-          dlag1       = smo_ctd(tpCTD(1)) - smo_lisst(tpLISST(1));
-          dlag2       = smo_ctd(tpCTD(2)) - smo_lisst(tpLISST(2));
-          dlag_depth1 = smo_lisst(tpLISST(1));
-          dlag_depth2 = smo_lisst(tpLISST(2));
-          
-          % Correct depth for lag assuming linear drift
-          depth_bin_estimate = 1:1:fix(max(smo_lisst));
-          depth_lag_estimate = interp1([dlag_depth1 dlag_depth2],[dlag1 dlag2],depth_bin_estimate);
-          depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
-          depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
-          depth_cor =  smo_lisst + depth_lag;
-          
-          h1 = plot(ax1,lisst_time(tpLISST), smo_lisst(tpLISST), 'kp', 'markerfacecolor', [0.4 0.4 0.4],'markersize', 10,'DisplayName','matching LISST');
-          hc = plot(ax1,ctd_date(tpCTD), smo_ctd(tpCTD), 'ks', 'markerfacecolor', 'b','markersize', 10,'DisplayName','matching CTD');
-          
         otherwise
           fprintf('NOT SET UP YET\n')
           keyboard
@@ -363,6 +377,80 @@ for nf = 1:numel(cfg.proc_options.cast)
         end
       end % WHILE ~auto_choice_done
     end % WHILE ~auto_done
+    
+    %% Select manually - first try moving the LISST profile
+    if select_manually
+      try
+        hlisst_cor = copyobj(hlisst,ax1);
+        hlisst_cor.Color = 'g';
+        hlisst_cor.LineWidth = 5;
+        % move the green line a bit so it is obvious which one to select
+        yshift = fix(ax1.YLim(2)/10);
+        hlisst_cor.YData = hlisst_cor.YData + yshift;
+        ht = text(ax1,0.02,0.95,{'Drag LISST profile (green) to corrected position'; 'Click outside axe box when finished'},...
+          'Color','g','units','normalized','FontWeight','bold','FontSize',26);
+        % Jean-Pascal Rueff (2021). Click-n'-drag plot (https://www.mathworks.com/matlabcentral/fileexchange/5751-click-n-drag-plot), MATLAB Central File Exchange. Retrieved June 14, 2021.
+        done_moving = 0;
+        while ~done_moving
+          handles = interactive_move;
+          done_moving = input('  Finished moving to correct position? <1/0> ');
+        end
+        % make sure interactive mode is stopped
+        try uirestore(handles.init_state);catch; end
+
+        %% calculate depth lag
+        [~,lisst_point_deep]    = nanmax(hlisst.YData);
+        [~,lisst_point_shallow] = nanmin(hlisst.YData);
+        
+        dlag_depth1 = hlisst.YData(lisst_point_deep);
+        dlag1 = hlisst_cor.YData(lisst_point_deep) - hlisst.YData(lisst_point_deep);
+        dlag_depth2 = hlisst.YData(lisst_point_shallow);
+        dlag2 = hlisst_cor.YData(lisst_point_shallow) - hlisst.YData(lisst_point_shallow);
+        if isequal(dlag1, dlag2)
+          dlag1 = dlag1+0.10;
+        end
+        depth_cor = hlisst_cor.YData;
+        depth_lag =  smo_lisst - depth_cor';
+        %% calculate time lag
+        time_difference = hlisst_cor.XData(1) - hlisst.XData(1);
+        lisst_time_cor  = lisst_time + time_difference;
+        time_lag_seconds = time_difference.*60.*60.*24; % convert from datenum to seconds
+        
+        hlagt = text(ax1,0.02,0.15,['time offset  = ' num2str(time_lag_seconds,'%.2f') ' seconds'],'units','normalized','FontWeight','bold');
+        hlag1 = text(ax1,0.02,0.10, ['depth offset = ' num2str(dlag1,'%.2f')  'm @ ' num2str(dlag_depth1,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
+        hlag2 = text(ax1,0.02,0.05, ['depth offset = ' num2str(dlag2,'%.2f') 'm @ ' num2str(dlag_depth2,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
+        
+        %% Choose whether corrected profile is okay, or if not, try again
+        chc = input('  Does the corrected profile look good? <1/0> ');
+        if chc == 0
+          done_moving = 0;
+          select_manually = 1;
+        else
+          done_moving = 1;
+          select_manually = 0;
+        end
+        try
+          uirestore(handles.init_state);
+        catch
+        end
+        if done_moving
+          % save figure
+          if cfg.savefig
+            figname = fullfile(cfg.path.dir_figs,[cfg.project '_cast' scast '_sensor_lag']);
+            standard_printfig_lowrespng(figname)
+          end
+        end
+        
+        % clear figure
+        delete(hlisst_cor); delete(ht);
+        delete(hlag1); delete(hlag2); delete(hlagt);
+      catch
+        % Select manually by clicking on points
+        keyboard
+        select_manually = 1;
+      end
+    end
+  
     
     %% Select corresponding deepest and shallowest points in CTD&LISST profiles to calculate the time and depth lags
     % depth lag is not constant but seems to be linear with depth so
@@ -466,7 +554,7 @@ for nf = 1:numel(cfg.proc_options.cast)
     end %% SELECT MANUALLY
     
     % Write to file: cast,datfile,time_lag,depth1,depth2,depth1_lag,depth2_lag
-    fprintf(fileID,'%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f\n',ncast,datname,time_lag_seconds,dlag_depth1,dlag_depth2,dlag1,dlag2);
+    fprintf(fileID,'\n%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f\n',ncast,datname,time_lag_seconds,dlag_depth1,dlag_depth2,dlag1,dlag2);
     
   end %% LOADED LAGS OR CALCULATED LAGS
   % store values to structure
@@ -488,6 +576,7 @@ fprintf('DONE finding time and depth lags\n')
 % Pull out time at the beginning of each cast
 times = nan(numel(cfg.proc_options.datfile),1);
 for nc = 1:numel(times)
+
   idx_lisst = find(data_pre.cast == cfg.proc_options.cast(nc));
   times(nc) = data_pre.date(idx_lisst(1));
 end

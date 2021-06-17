@@ -24,8 +24,8 @@ ffmt = '%.4f'; % basic formatting string
 
 %% 1 | Set up standard columns
 hdr   = {'Cruise' 'Station' 'Type' 'Date_Time' 'Longitude_[decimal_degrees_east]' 'Latitude_[decimal_degrees_north]' 'Bot. Depth [m]' 'Cast_Number' 'Depth_[m]'};
-units = {'none'   'none'    'none' 'yyyy-mm-ddTHH:MM:SS' 'degrees' 'degrees' 'm' 'none' 'm'};
-wfmt  = {'%s'     '%s'      '%s'   '%s'                   ffmt      ffmt     '%d' '%d'  ffmt};
+units = {'none'   'none'    'none' 'yyyy-mm-ddTHH:MM:SS' 'degrees' 'degrees' 'm'    'none' 'm'};
+wfmt  = {'%s'     '%s'      '%s'   '%s'                   ffmt      ffmt     '%.1f' '%d'    ffmt};
 lisst = struct();
 lisst.Cruise      = repmat({cfg.header.cruise_ID},sz);  %Sikuliaq standard or [vessel-code][YYYY][MM]
 lisst.Station     = data_proc.station;                  %StationName
@@ -120,4 +120,13 @@ fclose(fileID);                 % close file
 %% Plot
 LISST_plot_NGALTER(wname)
 
+%% rename plots
+pngs = dir(fullfile(cfg.path.dir_submit_L2,'*.png'));
+bad = contains({pngs.name},'._');
+pngs(bad) = [];
+for nimg = 1:numel(pngs)
+  png_name = fullfile(pngs(nimg).folder,pngs(nimg).name);
+  new_png  = fullfile(pngs(nimg).folder,[cfg.header.cruise_ID '_LISST_' pngs(nimg).name]);
+  movefile(png_name, new_png)
+end
 end %% MAIN FUNCTION 

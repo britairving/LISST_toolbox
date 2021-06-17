@@ -20,27 +20,29 @@ function LISST_processing_workflow
 
 
 %% 0 | USER INPUT: project and year
-cfg.project      = 'LISST_sn4025_2019_NGA_TGX201909';         % Project folder in LISST_Data
-cfg.year         = 2019;                                      % year when first measurement was taken
+% cfg.project      = 'LISST_sn4025_2018_EXPORTS_SR201812';
+cfg.project      = 'LISST_sn4041_2018_ASGARD_SKQ201813S';     % Project folder in LISST_Data
+% cfg.project      = 'LISST_sn4025_2017_ASGARD_SKQ201709S';     % Project folder in LISST_Data
+cfg.year         = 2018;                                      % year when first measurement was taken
 cfg.testing      = 0;                                         % 0 = processes all available DAT files, 1 = processes first 10 DAT files
 cfg.savefig      = 1;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs
 cfg.path.base    = '/Volumes/toshiba1/LISST_Data_Structured'; % Path to where LISST_Data folder
 cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to LISST toolbox
 
 %% 0 | Configure processing
-skip_to_proc =  1;    % 1 = jumps to processing
-skip_to_qaqc =  1;    % 1 = jumps to qaqc
-
+skip_to_proc =  0;    % 1 = jumps to processing
+skip_to_qaqc =  0;    % 1 = jumps to qaqc
 %% 1 | Read project metadata and instrument information
 try % Try to read in project configuration from [cfg.project '_config.m]
+  addpath(genpath(cfg.path.base))
   eval(['cfg = ' cfg.project '_config(cfg);'])
 catch % catch and explain why script stopped
   fprintf('Need to set up %s_config.m script, see example provided\n',cfg.project)
   error('Cannot load config.m for this project\n')
 end
+
 %% 2 | Configure paths and processing methods
 cfg = LISST_processing_config(cfg);
-
 %% 3 | step through processing workflow
 if ~skip_to_qaqc
   if ~skip_to_proc
@@ -49,9 +51,9 @@ if ~skip_to_qaqc
     [cfg, data_raw, meta_raw] = LISST_read_raw_data(cfg);
 
     %% 5 | Write raw data to ASCII file
-    if strcmpi(cfg.write_format,'nga_lter') 
-      LISST_write_Level1(cfg,data_raw,meta_raw); % Raw instrument data, ASCII format
-    end
+   % if strcmpi(cfg.write_format,'nga_lter') 
+   %   LISST_write_Level1(cfg,data_raw,meta_raw); % Raw instrument data, ASCII format
+   % end
    
     %% 6 | Preprocess data
     % Identifies downcasts & matched with CTD casts
@@ -88,7 +90,7 @@ if cfg.qaqc_options.expert_qc
   keyboard
   [cfg, data_proc, meta_proc] = LISST_data_qaqc_expert(cfg, data_proc, meta_proc);
 end
-keyboard
+
 %% 11 | Write to file
 % Organizes depend files into folders, and writes processed data to text
 % file depending on cfg.write_fmt

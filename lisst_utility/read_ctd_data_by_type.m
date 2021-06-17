@@ -46,6 +46,11 @@ switch ctd_type
           try ctd.r2r_event = repmat({sbHeader.r2r_event},size(data.date));
           catch; ctd.r2r_event = repmat({sbHeader.R2R_Event},size(data.date));end
         end
+        if any(contains(sbHeader.comments,'Station ID:'))
+          station_str = sbHeader.comments(contains(sbHeader.comments,'Station ID'));
+          station_str = strsplit(char(station_str),'Station ID:');
+          ctd.station = repmat({strtrim(station_str{2})},size(data.date));
+        end
         ctd.date   = data.datenum;  % datenum calculated in readsb.m
         ctd.press  = data.pressure; % water pressure [dbar]
         ctd.temp   = data.wt;       % water temperature [ degreesC]
@@ -59,23 +64,31 @@ switch ctd_type
           try    ctd.r2r_event = [ctd.r2r_event; repmat({sbHeader.r2r_event},size(data.date))];
           catch; ctd.r2r_event = [ctd.r2r_event; repmat({sbHeader.R2R_Event},size(data.date))];end
         end
+        if any(contains(sbHeader.comments,'Station ID:'))
+          station_str = sbHeader.comments(contains(sbHeader.comments,'Station ID'));
+          station_str = strsplit(char(station_str),'Station ID:');
+          ctd.station = [ctd.station; repmat({strtrim(station_str{2})},size(data.date))];
+        else
+          keyboard
+          ctd.station = [ctd.station; repmat({'unknown'},size(data.date))];
+        end
         ctd.date   = [ctd.date;   data.datenum];  
         ctd.press  = [ctd.press;  data.pressure]; 
         ctd.temp   = [ctd.temp;   data.wt];       
         ctd.salt   = [ctd.salt;   data.sal];      
       end
     end
-    
     %% Remove any duplicate entries
     [~,uidx] = unique(ctd.date); % This will also sort by date
     fields = fieldnames(ctd);
     for nf = 1:numel(fields)
       ctd.(fields{nf}) = ctd.(fields{nf})(uidx,:);
     end
+    keyboard
   case 'nga_lter'
     fprintf('You will need to get raw hex files and process through SBE software\n')
     fprintf('It is important to have a continuous timestamp (timeJ) and upcast and downcast data\n')
-    fprintf('Then, point to that directory in the NGALTER_read_ctd_L0.m.m script where cnv files are located\n')
+    fprintf('Then, point to that directory in the NGALTER_read_ctd_L0.m script where cnv files are located\n')
     keyboard
   otherwise 
     fprintf('NEED TO SET THIS UP!\n')
@@ -89,5 +102,5 @@ end
 
 %% 5 | Save CTD data to matlab file
 fprintf('Saving CTD data to %s\n',ctd_filename)
-save(ctd_filename,'ctd');
+save(ctd_filename,'ctd','-v7.3');
 end %% MAIN FUNCTION

@@ -711,14 +711,14 @@ function [sbHeader, headerArray, nHeaderLine] = readsbheader(allData)
         % Record the header lines in a structure:    
         % Record comments ( i.e. beginning with "!" )
         if strncmp(headerLine, '!', 1)
-
+            
             % Only record if a comment if text follows the "!"
             if length(headerLine) > 1
 
                 if isempty(sbHeader.comments)
-                    sbHeader.comments = char(sbHeader.comments, headerLine);
+                    sbHeader.comments = {char(headerLine)};
                 else
-                    sbHeader.comments = char(headerLine);
+                    sbHeader.comments = [sbHeader.comments; {char(headerLine)}];
                 end
 
             end

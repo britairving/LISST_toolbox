@@ -98,9 +98,8 @@ end
 %% 2 | Processing methods based on user preference
 % -----------------------------------------------------------------------
 cfg.proc_options.header = 'structure to store all switches and settings used for processing LISST data';
-cfg.proc_options.calculate_range = 1;   % 0 = does nothing, 1 = calculates range of parameters by taking the difference of the parameter derived using the maximum and minimum backgrounds
-cfg.proc_options.profile_limit   = 30;  % [meter] ideally just below soak depth - depth profile limit for cast identification.  I.e. if data collected on shallow shelf, set low. 
-cfg.proc_options.calculate_range = 1;   % 1 = calculates data using maximum and minimum background to get range of data for uncertainty investigation
+cfg.proc_options.calculate_range = 0;   % 0 = does nothing, 1 = calculates range of parameters by taking the difference of the parameter derived using the maximum and minimum backgrounds
+cfg.proc_options.profile_limit   = 7;   % [meter] ideally just below soak depth - depth profile limit for cast identification.  I.e. if data collected on shallow shelf, set low. 
 
 %%  2b | Define inversion model used to process data
 % The Spherical particle model performs the mathematical inversion under
