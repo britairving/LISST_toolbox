@@ -510,7 +510,6 @@ while ~done_method
           zsc_int(nl,:) = fillmissing(zsc_int(nl,:)','linear','EndValues','extrap')';
         end
       end
-
       % create directory
       cfg.path.dir_zsc = fullfile(cfg.path.dir_zsc,['interpolated_' wt '_' datestr(now,'yyyymmdd_HHMM')]);
       if ~exist(cfg.path.dir_zsc,'dir')
@@ -536,10 +535,11 @@ while ~done_method
     %% Use averaged background measurements over whole cruise
     case 3 % MEAN
       cfg.proc_options.zscat_choice = ['mean' wt 'zscat'];
+      cfg.proc_options.zscat_files  = zscat.file;
       avg_zscat = mean(zscat.data,2); % average background for water type
       
       zscatname = [cfg.project '_mean_' wt '_zscat.asc'];
-      cfg.proc_options.zscfile(:)       = {zscatname};
+      cfg.proc_options.zscfile(:) = {zscatname};
       downcasts.zscfile(:) = {zscatname};
       
       fprintf(' \nAverage background calculated from files: %s\n',strjoin(zscat.file,', '))
@@ -558,6 +558,8 @@ while ~done_method
     %% Use median of background measurements over whole cruise
     case 4 % MEDIAN
       cfg.proc_options.zscat_choice = ['median' wt 'zscat'];
+      cfg.proc_options.zscat_files  = zscat.file;
+      
       med_zscat = median(zscat.data,2); % average background for water type
       zscatname = [cfg.project '_median_' wt '_zscat.asc'];
       cfg.proc_options.zscfile(:)       = {zscatname};

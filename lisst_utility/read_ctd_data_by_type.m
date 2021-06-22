@@ -35,6 +35,8 @@ ctd_filename = fullfile(ctd_directory,['CTD_' ctd_type '.mat']);
 switch ctd_type
   case 'seabass'
     ctdfiles = dir(fullfile(ctd_directory,'*.sb'));
+    bad = contains({ctdfiles.name},'._');
+    ctdfiles(bad) = [];
     for nsb = 1:numel(ctdfiles)
       [data, sbHeader, ~]  = readsb(fullfile(ctd_directory,ctdfiles(nsb).name),'MakeStructure',1);
       if nsb == 1 % Initialize ctd structure
@@ -69,7 +71,6 @@ switch ctd_type
           station_str = strsplit(char(station_str),'Station ID:');
           ctd.station = [ctd.station; repmat({strtrim(station_str{2})},size(data.date))];
         else
-          keyboard
           ctd.station = [ctd.station; repmat({'unknown'},size(data.date))];
         end
         ctd.date   = [ctd.date;   data.datenum];  
@@ -77,6 +78,7 @@ switch ctd_type
         ctd.temp   = [ctd.temp;   data.wt];       
         ctd.salt   = [ctd.salt;   data.sal];      
       end
+     
     end
     %% Remove any duplicate entries
     [~,uidx] = unique(ctd.date); % This will also sort by date

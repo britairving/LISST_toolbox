@@ -198,6 +198,7 @@ for nf = 1:numel(cfg.proc_options.datfile)
         case 3 % Try next cast
           ncast = ncast - 1;
           done_selecting = 1;
+          skip_matchctd  = 1;
           cast_selected  = 0;
           delete(hctd);delete(ht2);cla(ax2);
           title(ax1,'');
@@ -239,7 +240,7 @@ for nf = 1:numel(cfg.proc_options.datfile)
 
   % clear axes
   if exist('chc','var')
-    if cfg.savefig && ~isequal(chc,4) && ~isequal(chc,3)
+    if cfg.savefig && ~isequal(chc,3)
       figname = fullfile(cfg.path.dir_figs,[cfg.project '_' erase(datname,'.DAT') '_castmatch']);
       standard_printfig_lowrespng(figname)
     end

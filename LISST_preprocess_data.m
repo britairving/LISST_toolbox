@@ -150,7 +150,7 @@ end
 
 %% 7 | Limit data to downcast
 [cfg, data_pre, meta_pre] = LISST_identify_downcast(cfg,data_pre,meta_pre,ctd);
-keyboard
+
 %% 8 | Save data_pre and meta_pre structures 
 fprintf('Saving preprocessed data to file: %s\n',cfg.path.file_pre)
 save(cfg.path.file_pre,'cfg','data_pre','meta_pre');

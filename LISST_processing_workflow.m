@@ -17,12 +17,9 @@ function LISST_processing_workflow
 %  Authors:
 %    Brita K Irving  <bkirving@alaska.edu>
 %   | Starting point
-
-
 %% 0 | USER INPUT: project and year
-% cfg.project      = 'LISST_sn4025_2018_EXPORTS_SR201812';
-cfg.project      = 'LISST_sn4041_2018_ASGARD_SKQ201813S';     % Project folder in LISST_Data
-% cfg.project      = 'LISST_sn4025_2017_ASGARD_SKQ201709S';     % Project folder in LISST_Data
+cfg.project      = 'LISST_sn4025_2018_EXPORTS_SR201812';
+% cfg.project      = 'LISST_sn4041_2018_EXPORTS_RR201813';
 cfg.year         = 2018;                                      % year when first measurement was taken
 cfg.testing      = 0;                                         % 0 = processes all available DAT files, 1 = processes first 10 DAT files
 cfg.savefig      = 1;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs
@@ -31,7 +28,7 @@ cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to 
 
 %% 0 | Configure processing
 skip_to_proc =  0;    % 1 = jumps to processing
-skip_to_qaqc =  0;    % 1 = jumps to qaqc
+skip_to_qaqc =  1;    % 1 = jumps to qaqc
 %% 1 | Read project metadata and instrument information
 try % Try to read in project configuration from [cfg.project '_config.m]
   addpath(genpath(cfg.path.base))
@@ -43,6 +40,7 @@ end
 
 %% 2 | Configure paths and processing methods
 cfg = LISST_processing_config(cfg);
+
 %% 3 | step through processing workflow
 if ~skip_to_qaqc
   if ~skip_to_proc
@@ -68,7 +66,8 @@ if ~skip_to_qaqc
   %% 7 | Process data
   % Processes data following Sequoia's recommendations and derives various other parameters. 
   [cfg, data_proc, meta_proc] = LISST_process_data(cfg,data_pre,meta_pre);
-  
+
+
 else
   fprintf('Loading processed data from file: %s\n',cfg.path.file_proc)
   load(cfg.path.file_proc);           % load preprocessed data 

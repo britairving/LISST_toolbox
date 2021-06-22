@@ -42,14 +42,14 @@ fprintf('Copying MATLAB files to: %s\n',cfg.path.dir_submit_doc)
 copyfile(cfg.path.file_qc,cfg.path.dir_submit_doc)
 if include_gridded
   copyfile(cfg.path.file_grid,cfg.path.dir_submit_doc)
-end
+% end
 
 
 %% 2 | Write processed data to 
 switch cfg.write_format
   %% I  | SeaBASS format
   case 'seabass' % https://seabass.gsfc.nasa.gov/wiki/Data_Submission
-     LISST_write_SeaBASS(cfg,data_proc,data_grid,meta_proc)
+    LISST_write_SeaBASS(cfg,data_proc,meta_proc,data_grid)
   %% II | NGA LTER Format
   case 'nga_lter' % AXIOM Research Workspace
     LISST_write_NGALTER(cfg,data_proc,meta_proc)

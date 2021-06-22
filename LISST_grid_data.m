@@ -9,14 +9,21 @@ function [cfg, data_grid, meta_grid] = LISST_grid_data(cfg,data_proc,meta_proc)
 %  Authors:
 %    Brita K Irving  <bkirving@alaska.edu>
 %% 0 | Set up basic filenames and paths
-
 if cfg.grid_options.ignore_flagged
   cfg.path.file_grid = strrep(cfg.path.file_qc,  '.mat','_gridded.mat'); %fullfile(cfg.path.project,[cfg.project '_processed_qc_gridded.mat']);
 else
   cfg.path.file_grid = strrep(cfg.path.file_proc,'.mat','_gridded.mat'); %fullfile(cfg.path.project,[cfg.project '_processed_qc_gridded.mat']);
 end
 
-%% 1 | Define number of casts
+
+%% 1 | Get rid of erroneous data
+% This in large part is due to the choice of backgrounds!
+bad_signal = all(data_proc.scat < 0 & data_proc.cscat == 0, 2);
+data_table = struct2table(data_proc);
+data_table(bad_signal,:) = [];
+data_proc = table2struct(data_table,'ToScalar',true);
+
+%% 2 | Define number of casts
 [unique_casts,u_idx] = unique(data_proc.cast);
 if cfg.testing
   num_casts = 6;
@@ -25,13 +32,14 @@ else
 end
 unique_casts = unique_casts(1:num_casts);
 
-%% 2 | Define which variables to bin
+%% 3 | Define which variables to bin
 vars_to_bin = ...
   {'date';...
   'lat';...
   'lon';...
   'cast';...
   'station';...
+  'r2r_event';...
   'botdepth';...
   'depth';...
   'tau';...
@@ -60,12 +68,12 @@ rm_vars = ~ismember(vars_to_bin,fieldnames(data_proc));
 vars_to_bin(rm_vars) = [];
 % cast, date, datetime are all gridded differently so remove
 % Do not average these per depth bin because will not be monotonic
-variables_to_skip = {'datfile' 'zscfile' 'cast' 'lat' 'lon' 'depth' 'station' 'botdepth'};
+variables_to_skip = {'datfile' 'zscfile' 'cast' 'lat' 'lon' 'depth' 'station' 'r2r_event' 'botdepth'};
 rm_vars = ismember(vars_to_bin,variables_to_skip);
 vars_to_bin(rm_vars) = [];
 num_variables = numel(vars_to_bin);
 
-%% 3 | Compute depth intervals
+%% 4 | Compute depth intervals
 depth_resolution = cfg.grid_options.bin_depth_m;
 depth_min   = 0; % round(min(data_proc.depth) / depth_resolution) * depth_resolution;
 depth_max   = round(max(data_proc.depth) / depth_resolution) * depth_resolution;
@@ -76,18 +84,27 @@ num_levels  = numel(depth_range);
 data_grid = struct();
 data_grid.datfile  = data_proc.datfile(u_idx);
 data_grid.zscfile  = data_proc.zscfile(u_idx);
+data_grid.datenum  = data_proc.date(u_idx);
 data_grid.cast     = unique_casts(:);
 data_grid.lat      = data_proc.lat(u_idx);
 data_grid.lon      = data_proc.lon(u_idx);
 data_grid.depth    = depth_range;
 data_grid.station  = data_proc.station(u_idx);
-data_grid.botdepth = data_proc.botdepth(u_idx);
+if isfield(data_proc,'r2r_event')
+  data_grid.r2r_event = data_proc.r2r_event(u_idx);
+end
+if isfield(data_proc,'botdepth')
+  data_grid.botdepth = data_proc.botdepth(u_idx);
+end
 
 data_grid.bincount = nan(num_casts, num_levels);
 
 % add to metadata
 meta_grid.datfile = meta_proc.datfile;
 meta_grid.zscfile = meta_proc.zscfile;
+meta_grid.datenum = meta_proc.date;
+meta_grid.datenum.comment = 'datenum at start of cast';
+
 meta_grid.cast = meta_proc.cast;
 meta_grid.lat  = meta_proc.lat;
 meta_grid.lon  = meta_proc.lon;
@@ -96,7 +113,12 @@ meta_grid.depth.grid_resolution = depth_resolution;
 meta_grid.depth.grid_min = depth_min;
 meta_grid.depth.grid_max = depth_max;
 meta_grid.station  = meta_proc.station;
-meta_grid.botdepth = meta_proc.botdepth;
+if isfield(data_proc,'r2r_event')
+  meta_grid.r2r_event = meta_proc.r2r_event;
+end
+if isfield(meta_proc,'botdepth')
+  meta_grid.botdepth = meta_proc.botdepth;
+end
 
 meta_grid.bincount.name = 'Number of records averaged into a bin or reported measurement';
 meta_grid.bincount.unit = 'none';

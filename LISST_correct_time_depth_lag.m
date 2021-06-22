@@ -18,8 +18,7 @@ function [cfg, data_pre, meta_pre] = LISST_correct_time_depth_lag(cfg,data_pre,m
 %% 0 | Set up base structure
 close all
 dbstop if error
-cfg.savefig = 0;
-auto_methods = 2;
+auto_methods = 3; % Number of automatic methods to try
 %% Initialize new variables
 data_pre.depth_orig = data_pre.depth;
 data_pre.date_orig  = data_pre.date;
@@ -155,6 +154,7 @@ for nf = 1:numel(cfg.proc_options.cast)
     hlag1 = text(ax1,0.02,0.10, ['depth offset = ' num2str(dlag1,'%.2f')  'm @ ' num2str(dlag_depth1,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
     hlag2 = text(ax1,0.02,0.05, ['depth offset = ' num2str(dlag2,'%.2f') 'm @ ' num2str(dlag_depth2,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
     % save figure
+
     if cfg.savefig
       figname = fullfile(cfg.path.dir_figs,[cfg.project '_cast' scast '_sensor_lag']);
       standard_printfig_lowrespng(figname)
@@ -171,6 +171,27 @@ for nf = 1:numel(cfg.proc_options.cast)
     while ~auto_done
       switch ncnt_auto
         case 1
+          if nf > 1 && isfinite(cfg.proc_options.time_lag(nf-1)) && ...
+              isfinite(cfg.proc_options.depth1_lag(nf-1)) && isfinite(cfg.proc_options.depth2_lag(nf-1))
+            try
+              %% Try the previous correction
+              % STEP1
+              % time lag - convert from seconds to datenum (days)
+              time_lag_seconds = cfg.proc_options.time_lag(nf-1);
+              time_difference  = time_lag_seconds./60./60./24; % convert from seconds to datenum
+              lisst_time_cor   = lisst_time + time_difference;
+              % depth corrected using previous lags
+              depth_bin_estimate = 0:1:fix(max(smo_lisst));
+              depth_lag_estimate = interp1([cfg.proc_options.depth1(nf-1) cfg.proc_options.depth2(nf-1)],[cfg.proc_options.depth1_lag(nf-1) cfg.proc_options.depth2_lag(nf-1)],depth_bin_estimate,'linear','extrap');
+              depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
+              depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
+              depth_cor =  smo_lisst + depth_lag;
+              
+            catch
+              
+            end
+          end
+        case 2
           try
             %% Automatically calculate lag by interpolating depth, then time
             % STEP1 | try to interpolate depth by time (this may not work if there
@@ -209,7 +230,7 @@ for nf = 1:numel(cfg.proc_options.cast)
             [~,iminlisst] = min(depth_cor(1:imaxlisst));
             
             idx_down_lisst = iminlisst:imaxlisst;
-            [~,iulisst,iorig] = unique(depth_cor(idx_down_lisst));
+            [~,iulisst,~] = unique(depth_cor(idx_down_lisst));
             iulisst = idx_down_lisst(iulisst);
             
             lisst_interp_t = interp1(smo_ctd(iuctd),ctd_date(iuctd),depth_cor(iulisst));
@@ -240,7 +261,7 @@ for nf = 1:numel(cfg.proc_options.cast)
             [~,iminlisst] = min(depth_cor(1:imaxlisst));
             
             idx_down_lisst = iminlisst:imaxlisst;
-            [~,iulisst,iorig] = unique(depth_cor(idx_down_lisst));
+            [~,iulisst,~] = unique(depth_cor(idx_down_lisst));
             iulisst = idx_down_lisst(iulisst);
             
             lisst_interp_t = interp1(smo_ctd(iuctd),ctd_date(iuctd),depth_cor(iulisst));
@@ -254,7 +275,7 @@ for nf = 1:numel(cfg.proc_options.cast)
           end
           %plot(gca,lisst_time,depth_cor,'y.')
           %plot(gca,lisst_time_cor,depth_cor,'y.')
-        case 2
+        case 3
           %% Automatically detect turning points
           try
             for profiler = 1:2
@@ -314,6 +335,7 @@ for nf = 1:numel(cfg.proc_options.cast)
           fprintf('NOT SET UP YET\n')
           keyboard
       end
+      
       %% plot automatically detected points for matching ctd&lisst profiles
       h1_cor = plot(ax1,lisst_time_cor,depth_cor,'g.-','LineWidth',1,'DisplayName','LISST corrected');
       hlagt = text(ax1,0.02,0.15,['time offset  = ' num2str(time_lag_seconds,'%.2f') ' seconds'],'units','normalized','FontWeight','bold');
@@ -321,10 +343,9 @@ for nf = 1:numel(cfg.proc_options.cast)
       hlag2 = text(ax1,0.02,0.05, ['depth offset = ' num2str(dlag2,'%.2f') 'm @ ' num2str(dlag_depth2,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
       
       if all(isnan(depth_cor)) == 1 
-        if ncnt_auto == 1
+        if ncnt_auto < 3
           auto_choice_done = 1;
           ncnt_auto = ncnt_auto + 1;
-       
         end
       else
         auto_choice_done = 0;
@@ -347,7 +368,7 @@ for nf = 1:numel(cfg.proc_options.cast)
             select_manually  = 1;
             auto_choice_done = 1;
             auto_done = 1;
-          elseif ncnt_auto == 1
+          elseif ncnt_auto < auto_methods
             auto_choice_done = 1;
             ncnt_auto = ncnt_auto + 1;
           end
