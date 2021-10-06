@@ -18,12 +18,12 @@ function LISST_processing_workflow
 %    Brita K Irving  <bkirving@alaska.edu>
 %   | Starting point
 %% 0 | USER INPUT: project and year
-cfg.project      = 'LISST_sn4025_2018_EXPORTS_SR201812';
+cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
 % cfg.project      = 'LISST_sn4041_2018_EXPORTS_RR201813';
-cfg.year         = 2018;                                      % year when first measurement was taken
+cfg.year         = 2021;                                      % year when first measurement was taken
 cfg.testing      = 0;                                         % 0 = processes all available DAT files, 1 = processes first 10 DAT files
-cfg.savefig      = 1;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs
-cfg.path.base    = '/Volumes/toshiba1/LISST_Data_Structured'; % Path to where LISST_Data folder
+cfg.savefig      = 0;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs
+cfg.path.base    = '/Volumes/MPDL/LISST_Data_Structured'; % Path to where LISST_Data folder
 cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to LISST toolbox
 
 %% 0 | Configure processing
@@ -40,7 +40,7 @@ end
 
 %% 2 | Configure paths and processing methods
 cfg = LISST_processing_config(cfg);
-
+keyboard
 %% 3 | step through processing workflow
 if ~skip_to_qaqc
   if ~skip_to_proc
@@ -49,9 +49,9 @@ if ~skip_to_qaqc
     [cfg, data_raw, meta_raw] = LISST_read_raw_data(cfg);
 
     %% 5 | Write raw data to ASCII file
-   % if strcmpi(cfg.write_format,'nga_lter') 
-   %   LISST_write_Level1(cfg,data_raw,meta_raw); % Raw instrument data, ASCII format
-   % end
+   if strcmpi(cfg.write_format,'nga_lter') 
+     LISST_write_Level1(cfg,data_raw,meta_raw); % Raw instrument data, ASCII format
+   end
    
     %% 6 | Preprocess data
     % Identifies downcasts & matched with CTD casts
