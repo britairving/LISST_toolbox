@@ -23,12 +23,17 @@ cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
 cfg.year         = 2021;                                      % year when first measurement was taken
 cfg.testing      = 0;                                         % 0 = processes all available DAT files, 1 = processes first 10 DAT files
 cfg.savefig      = 0;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs
-cfg.path.base    = '/Volumes/MPDL/LISST_Data_Structured'; % Path to where LISST_Data folder
-cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to LISST toolbox
+if ismac
+  cfg.path.base    = '/Volumes/MPDL/LISST_Data_Structured'; % Path to where LISST_Data folder
+  cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to LISST toolbox
+else
+  cfg.path.base    = 'X:\LISST_Data_Structured'; % Path to where LISST_Data folder
+  cfg.path.toolbox = 'D:\MATLAB\LISST_toolbox\'; % Path to LISST toolbox
+end
 
 %% 0 | Configure processing
 skip_to_proc =  0;    % 1 = jumps to processing
-skip_to_qaqc =  1;    % 1 = jumps to qaqc
+skip_to_qaqc =  0;    % 1 = jumps to qaqc
 %% 1 | Read project metadata and instrument information
 try % Try to read in project configuration from [cfg.project '_config.m]
   addpath(genpath(cfg.path.base))
@@ -40,7 +45,7 @@ end
 
 %% 2 | Configure paths and processing methods
 cfg = LISST_processing_config(cfg);
-keyboard
+
 %% 3 | step through processing workflow
 if ~skip_to_qaqc
   if ~skip_to_proc
@@ -56,6 +61,7 @@ if ~skip_to_qaqc
     %% 6 | Preprocess data
     % Identifies downcasts & matched with CTD casts
     [cfg, data_pre, meta_pre] = LISST_preprocess_data(cfg, data_raw, meta_raw);
+    keyboard
   else
     fprintf('Loading preprocessed data from file: %s\n',cfg.path.file_pre)
     load(cfg.path.file_pre);            % load raw data in Matlab format

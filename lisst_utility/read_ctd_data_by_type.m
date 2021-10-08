@@ -31,6 +31,7 @@ function [ctd,ctd_filename] = read_ctd_data_by_type(ctd_type,ctd_directory)
 %% 1 | Initialize filename
 ctd_filename = fullfile(ctd_directory,['CTD_' ctd_type '.mat']);
 
+keyboard
 %% 2 | Read CTD data based on type
 switch ctd_type
   case 'seabass'
@@ -86,7 +87,7 @@ switch ctd_type
     for nf = 1:numel(fields)
       ctd.(fields{nf}) = ctd.(fields{nf})(uidx,:);
     end
-    keyboard
+    
   case 'nga_lter'
     fprintf('You will need to get raw hex files and process through SBE software\n')
     fprintf('It is important to have a continuous timestamp (timeJ) and upcast and downcast data\n')
