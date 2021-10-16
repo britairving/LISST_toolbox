@@ -18,8 +18,8 @@ function LISST_processing_workflow
 %    Brita K Irving  <bkirving@alaska.edu>
 %   | Starting point
 %% 0 | USER INPUT: project and year
-cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
-% cfg.project      = 'LISST_sn4041_2018_EXPORTS_RR201813';
+% cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
+cfg.project      = 'LISST_sn4041_2021_EXPORTS_JC214';
 cfg.year         = 2021;                                      % year when first measurement was taken
 cfg.testing      = 0;                                         % 0 = processes all available DAT files, 1 = processes first 10 DAT files
 cfg.savefig      = 0;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs
@@ -33,7 +33,7 @@ end
 
 %% 0 | Configure processing
 skip_to_proc =  0;    % 1 = jumps to processing
-skip_to_qaqc =  0;    % 1 = jumps to qaqc
+skip_to_qaqc =  1;    % 1 = jumps to qaqc
 %% 1 | Read project metadata and instrument information
 try % Try to read in project configuration from [cfg.project '_config.m]
   addpath(genpath(cfg.path.base))
@@ -61,18 +61,16 @@ if ~skip_to_qaqc
     %% 6 | Preprocess data
     % Identifies downcasts & matched with CTD casts
     [cfg, data_pre, meta_pre] = LISST_preprocess_data(cfg, data_raw, meta_raw);
-    keyboard
   else
     fprintf('Loading preprocessed data from file: %s\n',cfg.path.file_pre)
     load(cfg.path.file_pre);            % load raw data in Matlab format
-    cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to LISST toolbox
     cfg = LISST_processing_config(cfg); % reload load cfg incase things have changed
   end
   
   %% 7 | Process data
+  keyboard
   % Processes data following Sequoia's recommendations and derives various other parameters. 
   [cfg, data_proc, meta_proc] = LISST_process_data(cfg,data_pre,meta_pre);
-
 
 else
   fprintf('Loading processed data from file: %s\n',cfg.path.file_proc)

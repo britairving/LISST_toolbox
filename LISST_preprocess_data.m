@@ -62,7 +62,6 @@ meta_pre.temp.unit  = 'degC';
 meta_pre.depth.name = 'depth calibrated using factory supplied constants from LISST.INI file';
 meta_pre.depth.unit = 'm';
 
-
 %% 4 | Read CTD data
 if exist(cfg.path.file_ctddata,'file')
   fprintf('Loading CTD data from %s\n',cfg.path.file_ctddata)
@@ -144,7 +143,6 @@ if strcmp(cfg.project,'LISST_sn4025_2019_NGA_TGX201909') || strcmp(cfg.project,'
   end
 end
 
-  
 %% 6 | Correct time and depth lag
 [cfg, data_pre, meta_pre] = LISST_correct_time_depth_lag(cfg,data_pre, meta_pre,ctd);
 

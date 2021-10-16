@@ -76,7 +76,7 @@ cfg.path.file_raw      = fullfile(cfg.path.dir_proc,[cfg.project '_raw.mat']);  
 cfg.path.file_pre      = fullfile(cfg.path.dir_proc,[cfg.project '_pre.mat']);  % STEP 2: Preprocessed data - matched with CTD casts, downcasts identified, temperature and depth corrected for any lags
 
 %%  1b | Create folder hierarchy if doesn't exist
-fields = {'dir_raw' 'dir_zsc' 'dir_inst' 'dir_figs' 'dir_ctd'};
+fields = {'dir_raw' 'dir_zsc' 'dir_inst' 'dir_figs' 'dir_ctd' 'dir_proc'};
 for nf = 1:numel(fields)
   if ~exist(cfg.path.(fields{nf}),'dir')
     fprintf(' making directory %s\n',cfg.path.(fields{nf}))
@@ -144,7 +144,7 @@ cfg.path.file_proc     = fullfile(cfg.path.dir_proc,[cfg.project '_proc_' model_
 %% 3 | Gridding methods
 % -----------------------------------------------------------------------
 cfg.grid_options.bin_depth_m     = 1.0; % [meter] depth range for binning
-cfg.grid_options.ignore_flagged  = 1;   % 1 = throws out flagged data before gridding, 0 = grids all data regardless if flagged or not
+cfg.grid_options.ignore_flagged  = 0;   % 1 = throws out flagged data before gridding, 0 = grids all data regardless if flagged or not
 
 % -----------------------------------------------------------------------
 %% 4 | Processing methods based on LISST instrument specifications

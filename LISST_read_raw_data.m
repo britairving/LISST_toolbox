@@ -24,7 +24,6 @@ dbstop if error
 if exist(cfg.path.file_raw,'file')
   fprintf('Loading %s\n',cfg.path.file_raw);
   load(cfg.path.file_raw,'data_raw','meta_raw','cfg')
-  keyboard
   return
 end
 

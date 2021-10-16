@@ -31,7 +31,6 @@ meta_pre.date.name       = 'MATLAB datenum corrected for time lag';
 
 %% 3 | Find time and/or depth lag
 % do this in separate loop so don't hold up the cast identification process
-
 if ~isfield(cfg.proc_options,'lag_correction')
   cfg.proc_options.cast       = cfg.proc_options.cast';           % sequential cast number
   cfg.proc_options.datfile    = cfg.proc_options.datfile';        % LISST profile ( datafile name )
@@ -43,11 +42,13 @@ if ~isfield(cfg.proc_options,'lag_correction')
 end
 
 %% 1 | Open ctd match file for writing
-% Hopefully will not have to repeat work because of this
+% Hopefully will not have to repeat work because this file will store the
+% previously identified lags.
 if exist(cfg.path.file_ctdlag,'file')
   ctdlag = readtable(cfg.path.file_ctdlag);
   fileID = fopen(cfg.path.file_ctdlag,'a');
 else
+  % File does not exist, so open the file for writing now
   ctdlag.cast = nan(size(cfg.proc_options.cast));
   fileID = fopen(cfg.path.file_ctdlag,'a');
   fprintf(fileID,'cast,datfile,time_lag,depth1,depth2,depth1_lag,depth2_lag\n');
@@ -74,7 +75,7 @@ for nf = 1:numel(cfg.proc_options.cast)
   scast   = num2str(ncast,'%03d');
   
   fprintf('\n-------------------------------------------------------------\n')
-  fprintf('Correction cast#%d data\n',ncast)
+  fprintf('Corrections for cast#%d\n',ncast)
   % Pull out lisst data for this cast
   idx_lisst = find(data_pre.cast == ncast);
   lisst_depth = data_pre.depth(idx_lisst);
@@ -106,17 +107,18 @@ for nf = 1:numel(cfg.proc_options.cast)
     ['CTD Cast' scast ]});
   ht1 = text(ax1,0.98,0.12,{'LISST profile';[datestr(lisst_time(1),'mm/dd HH:MM') ' - ' datestr(lisst_time(end),'HH:MM') ]},'units','normalized','HorizontalAlignment','right','Color','k','FontWeight','bold');
   try
-    hlegend = legend(ax1,'show','Location','se'); hlegend.FontSize = 14;
+    hlegend = legend(ax1,'show','Location','ne'); hlegend.FontSize = 14;
   end
   ylabel(ax1,'Depth [m]');
   min_x = min([lisst_time; ctd_date]);
   max_x = max([lisst_time; ctd_date]);
   xlim(ax1,[min_x-0.001 max_x+0.001]);
-  % plot ctd
+  %% plot ctd data
   hctd = plot(ax1,ctd_date,smo_ctd,'b.-','LineWidth',6,'DisplayName', ['CTD cast' num2str(scast)]);
   ht2 = text(ax1,0.98,0.04,{['CTD cast ' scast];[datestr(ctd_date(1),'mm/dd HH:MM') ' - ' datestr(ctd_date(end),'HH:MM') ]},'units','normalized','HorizontalAlignment','right','Color','b','FontWeight','bold');
   
   %% CORRECION ALREADY FOUND AND STORED
+  % ----------------------------------------------------------------------%
   if ismember(ncast,ctdlag.cast)
     ic = find(ctdlag.cast == ncast); % find index of matching cast
     if numel(ic) > 1 && all(isequal(ctdlag.cast(ic),ctdlag.cast(ic(1))))
@@ -159,16 +161,19 @@ for nf = 1:numel(cfg.proc_options.cast)
       figname = fullfile(cfg.path.dir_figs,[cfg.project '_cast' scast '_sensor_lag']);
       standard_printfig_lowrespng(figname)
     end
-    
-  else
-    %% FIND CORRECTION
+  %% ----------------------------------------------------------------------
+  else 
+    %% --------------------- * FIND CORRECTION * ------------------------%%
+    % skip_auto set to zero at the beginning of each cast
     if skip_auto
       auto_done = 1;
       select_manually = 1;
     else
-      auto_done = 0;
+      auto_done = 0; % keep trying to automatically detect time and depth lags (relative to CTD data) 
     end
+    %% Loop through methods and try to automatically determine time and depth lags
     while ~auto_done
+      % try different methods (ncnt_auto set to one at beginning of cast)
       switch ncnt_auto
         case 1
           if nf > 1 && isfinite(cfg.proc_options.time_lag(nf-1)) && ...
@@ -186,10 +191,11 @@ for nf = 1:numel(cfg.proc_options.cast)
               depth_lag = interp1(depth_bin_estimate,depth_lag_estimate,smo_lisst);
               depth_lag = fillmissing(depth_lag,'linear','EndValues','extrap');
               depth_cor =  smo_lisst + depth_lag;
-              
             catch
-              
+             
             end
+          else
+             depth_cor = nan(size(smo_lisst));
           end
         case 2
           try
@@ -271,7 +277,7 @@ for nf = 1:numel(cfg.proc_options.cast)
             lisst_time_cor   = lisst_time + time_difference;
             time_lag_seconds = time_difference.*60.*60.*24; % convert from datenum to seconds
           catch
-            
+            depth_cor = nan(size(smo_lisst));
           end
           %plot(gca,lisst_time,depth_cor,'y.')
           %plot(gca,lisst_time_cor,depth_cor,'y.')
@@ -335,12 +341,14 @@ for nf = 1:numel(cfg.proc_options.cast)
           fprintf('NOT SET UP YET\n')
           keyboard
       end
-      
-      %% plot automatically detected points for matching ctd&lisst profiles
-      h1_cor = plot(ax1,lisst_time_cor,depth_cor,'g.-','LineWidth',1,'DisplayName','LISST corrected');
-      hlagt = text(ax1,0.02,0.15,['time offset  = ' num2str(time_lag_seconds,'%.2f') ' seconds'],'units','normalized','FontWeight','bold');
-      hlag1 = text(ax1,0.02,0.10, ['depth offset = ' num2str(dlag1,'%.2f')  'm @ ' num2str(dlag_depth1,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
-      hlag2 = text(ax1,0.02,0.05, ['depth offset = ' num2str(dlag2,'%.2f') 'm @ ' num2str(dlag_depth2,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
+      % Add a catch incase wasn't able to calculate corrected depth
+      if exist('lisst_time_cor','var')
+        %% plot automatically detected points for matching ctd&lisst profiles
+        h1_cor = plot(ax1,lisst_time_cor,depth_cor,'g.-','LineWidth',1,'DisplayName','LISST corrected');
+        hlagt = text(ax1,0.02,0.15,['time offset  = ' num2str(time_lag_seconds,'%.2f') ' seconds'],'units','normalized','FontWeight','bold');
+        hlag1 = text(ax1,0.02,0.10, ['depth offset = ' num2str(dlag1,'%.2f')  'm @ ' num2str(dlag_depth1,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
+        hlag2 = text(ax1,0.02,0.05, ['depth offset = ' num2str(dlag2,'%.2f') 'm @ ' num2str(dlag_depth2,'%.2f') 'm'], 'units','normalized','FontWeight','bold');
+      end
       
       if all(isnan(depth_cor)) == 1 
         if ncnt_auto < 3
@@ -625,7 +633,7 @@ ax2.XLim = ax1.XLim;
 datetick(ax2,'x','keepticks','keeplimits')
 ax2.XLabel.String = 'date';
 ax2.YLabel.String = 'Depth lag [m]';
-legend(ax2,'show','location','nw')
+legend(ax2,'show','location','ne')
 title({strrep(cfg.project,'_','\_'); 'Time and depth offsets compared to CTD'})
 % save figure
 if cfg.savefig

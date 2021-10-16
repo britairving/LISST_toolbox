@@ -131,12 +131,16 @@ for nf = 1:numel(cfg.proc_options.cast)
   %% FIND DOWNCAST
   if find_downcast
     %% Try to identify profile automatically
-    % First, find approximate downcast based on CTD. CTD files should not be
-    % fully processed (i.e. binned and only downcast) but they likely have
-    % already removed the soaking period, so base limit based on that
+    % First, find approximate downcast based on CTD. CTD files should not
+    % be fully processed (i.e.NOT binned and only downcast) but they likely
+    % have already removed the soaking period, so base limit based on that
     % assumption.
     try
       idx_afterctd = find(lisst_time >= ctd_date(1),1);
+      % Now add jump to index 1m below idx_afterctd because it usually
+      % includes data JUST before it starts going down, i.e. 1/4 of a meter
+      idx_plus_halfm = find(smo_lisst(idx_afterctd:end) > smo_lisst(idx_afterctd)+0.25,1);
+      idx_afterctd = idx_afterctd + idx_plus_halfm;
       [~,imax] = max(smo_lisst);
       % Catch if stays at bottom for more than a few minutes - if so, try and
       % identify when ctd hits the deepest depth
@@ -146,6 +150,9 @@ for nf = 1:numel(cfg.proc_options.cast)
       if min_atdeepest > 1
         imax = find(smo_lisst > max_depth-1,1,'first');
       end
+      % Now go back up 0.5 meters
+      idx_minus_halfm = find(smo_lisst(1:imax) < smo_lisst(imax)-0.5,1,'last');
+      imax = idx_minus_halfm;
     catch
       keyboard
     end

@@ -50,7 +50,6 @@ for dtype = 1:num_data_types
   %% 3 | Define lisst structure and populate basic fields
   lisst = struct();
   if dtype == 1 % FULL RESOLUTION
-    continue
     data = data_proc;
   elseif dtype == 2 % GRIDDED
     %fprintf('Gridding may not be working...\n');
@@ -83,17 +82,19 @@ for dtype = 1:num_data_types
     lisst.trans   = reshape((data.tau.*100)',[],1);         % Percent transmission [%]
     % Remove quality_flag because any failed points are ignored during
     % gridding
+    %cfg.grid_options.ignore_flagged = 1 = throws out flagged data before gridding, 
+    %cfg.grid_options.ignore_flagged = 0 = grids all data regardless if flagged or not
     if cfg.grid_options.ignore_flagged
+      %fprintf('STOP AND SEE WHAT QUALITY FLAGS LOOK LIKE!\n')
+      %fprintf(' i.e. data was binned/gridded using nanmean, so flags may not be integers anymore...\n')
+      lisst.quality = reshape(data.quality_flag',[],1);
+      lisst.quality = round(lisst.quality);
+      lisst.quality(isnan(lisst.quality)) = 2;
+    else
       idx_remove = strcmp(w.fields_list,'quality');
       w.fields_list(idx_remove) = [];
       w.units_list(idx_remove)  = [];
       w.writefmt(idx_remove)    = [];
-    else
-      %fprintf('STOP AND SEE WHAT QUALITY FLAGS LOOK LIKE!\n')
-      %fprintf(' i.e. data was binned/gridded using nanmean, so flags may not be integers anymore...\n')
-      lisst.quality = reshape(data.quality_flag',[],1);  
-      lisst.quality = round(lisst.quality);
-      lisst.quality(isnan(lisst.quality)) = 2;
     end
 
     % add bincount where bincount = Number of records averaged into a bin or reported measurement
@@ -273,7 +274,7 @@ for dtype = 1:num_data_types
     fprintf('White space in metadata header, must remove to pass fcheck\n')
     keyboard
   end
-
+  
   %% 7 | Format for writing to sb file
   w.writefmt = strjoin(w.writefmt,',');
   w.writefmt = [w.writefmt '\n']; % add end of line character

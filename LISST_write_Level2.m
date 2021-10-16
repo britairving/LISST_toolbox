@@ -24,26 +24,34 @@ dbstop if error % debug mode
 
 %% 1 | Create submit folder with specifics on inversion model and background files
 cfg.path.dir_submit_doc = fullfile(cfg.path.dir_submit_L2,'documents');
-mkdir(cfg.path.dir_submit_doc) % store associated documents/zscat files
-
-%% 2 | move matlab datafile, zscat files, and raw data files into appropriate folders
-fprintf('Copying raw data files to: %s\n',cfg.path.dir_submit_L0)
-fprintf('Copying background files to: %s\n',cfg.path.dir_submit_doc)
-unique_datfiles = unique(data_proc.datfile);
-unique_zscfiles = unique(data_proc.zscfile);
-for nr = 1:numel(unique_datfiles)
-  copyfile(fullfile(cfg.path.dir_raw,unique_datfiles{nr}),cfg.path.dir_submit_L0)
+if ~exist(cfg.path.dir_submit_doc,'dir')
+  mkdir(cfg.path.dir_submit_doc) % store associated documents/zscat files
 end
+%% 2 | move matlab datafile, zscat files, and raw data files into appropriate folders
+if ~exist(cfg.path.dir_submit_L0,'dir')
+  mkdir(cfg.path.dir_submit_L0);
+end
+% only copy if directory is empty
+l0_dir = dir(cfg.path.dir_submit_L0);
+if isempty(l0_dir)
+  fprintf('Copying raw data files to: %s\n',cfg.path.dir_submit_L0)
+  unique_datfiles = unique(data_proc.datfile);
+  for nr = 1:numel(unique_datfiles)
+    copyfile(fullfile(cfg.path.dir_raw,unique_datfiles{nr}),cfg.path.dir_submit_L0)
+  end
+end
+fprintf('Copying background files to: %s\n',cfg.path.dir_submit_doc)
+unique_zscfiles = unique(data_proc.zscfile);
 for nz = 1:numel(unique_zscfiles)
   copyfile(fullfile(cfg.path.dir_zsc,unique_zscfiles{nz}),cfg.path.dir_submit_doc)
 end
 
-fprintf('Copying MATLAB files to: %s\n',cfg.path.dir_submit_doc)
-copyfile(cfg.path.file_qc,cfg.path.dir_submit_doc)
-if include_gridded
-  copyfile(cfg.path.file_grid,cfg.path.dir_submit_doc)
+% fprintf('Copying MATLAB files to: %s\n',cfg.path.dir_submit_doc)
+% copyfile(cfg.path.file_qc,cfg.path.dir_submit_doc)
+% if include_gridded
+%   copyfile(cfg.path.file_grid,cfg.path.dir_submit_doc)
 % end
-
+% 
 
 %% 2 | Write processed data to 
 switch cfg.write_format

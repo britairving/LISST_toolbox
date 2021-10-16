@@ -259,6 +259,9 @@ end
 if ~isempty(remove_these_data)
   fprintf('removed these!!\n')
   ignore_dir = fullfile(cfg.path.dir_raw,'_ignore');
+  if ~exist(ignore_dir,'dir')
+    mkdir(ignore_dir)
+  end
   for nrm = 1:numel(remove_these_data)
     if exist(fullfile(cfg.path.dir_raw,remove_these_data{nrm}),'file')
       movefile(fullfile(cfg.path.dir_raw,remove_these_data{nrm}),fullfile(ignore_dir,remove_these_data{nrm}));
