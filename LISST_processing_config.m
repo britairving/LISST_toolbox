@@ -207,11 +207,12 @@ end
 
 %% 5  | Quality control 
 %% 5a | Choose whether to run through qc tests automatically, or prompt user for each cast
+% Expert QC still not complete, so just skip this question for now
 cfg.qaqc_options.expert_qc = 0;
-fprintf('  Run through manual expert QC?\n')
-fprintf('   <0> ONLY auto QC     - no user prompting \n')
-fprintf('   <1> ALSO expert QC - step through casts \n')
-cfg.qaqc_options.expert_qc = input('   Enter choice: ');
+% fprintf('  Run through manual expert QC?\n')
+% fprintf('   <0> ONLY auto QC     - no user prompting \n')
+% fprintf('   <1> ALSO expert QC - step through casts \n')
+% cfg.qaqc_options.expert_qc = input('   Enter choice: ');
 
 %% 5b | Define flags
 % Code | Value | Definition

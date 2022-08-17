@@ -18,8 +18,8 @@ function LISST_processing_workflow
 %    Brita K Irving  <bkirving@alaska.edu>
 %   | Starting point
 %% 0 | USER INPUT: project and year
-% cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
-cfg.project      = 'LISST_sn4041_2021_EXPORTS_JC214';
+cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
+% cfg.project      = 'LISST_sn4041_2021_EXPORTS_JC214';
 cfg.year         = 2021;                                      % year when first measurement was taken
 cfg.testing      = 0;                                         % 0 = processes all available DAT files, 1 = processes first 10 DAT files
 cfg.savefig      = 0;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs
@@ -27,11 +27,14 @@ if ismac
   cfg.path.base    = '/Volumes/BritablueHD/LISST_Data_Structured'; % Path to where LISST_Data folder
   cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to LISST toolbox
 else
-  cfg.path.base    = 'F:\LISST_Data_Structured\'; % Path to where LISST_Data folder
-  cfg.path.toolbox = 'D:\MATLAB\LISST_toolbox\'; % Path to LISST toolbox
+  %cfg.path.base    = 'F:\LISST_Data_Structured\'; % Path to where LISST_Data folder
+  %cfg.path.toolbox = 'D:\MATLAB\LISST_toolbox\'; % Path to LISST toolbox
+  cfg.path.toolbox = 'C:\Users\birving\Documents\MATLAB\LISST_toolbox'; % Surface
+  cfg.path.base    = 'D:\LISST_Data_Structured\';
 end
 
 base_path = cfg.path.base;
+toolboxpath = cfg.path.toolbox;
 %% 0 | Configure processing
 skip_to_proc =  1;    % 1 = Loads preprocessed file, then jumps to processing
 skip_to_qaqc =  0;    % 1 = Loads processsed that, then jumps to qaqc
@@ -66,8 +69,10 @@ if ~skip_to_qaqc
     fprintf('Loading preprocessed data from file: %s\n',cfg.path.file_pre)
     load(cfg.path.file_pre);            % load raw data in Matlab format
     cfg.path.base = base_path;
+    cfg.path.toolbox = toolboxpath;
     cfg = LISST_processing_config(cfg); % reload load cfg incase things have changed
     cfg.savefig      = 0;  
+
   end
   
   %% 7 | Process data
@@ -80,7 +85,7 @@ else %% Loads processsed that, then jumps to qaqc
   load(cfg.path.file_proc);           % load preprocessed data 
   cfg = LISST_processing_config(cfg); % reload load cfg incase things have changed
 end
-keyboard
+
 %% 8 | Automated QC LISST data
 % Flags data according to QC tests described in LISST manual. 
 [cfg, data_proc, meta_proc] = LISST_data_qaqc_auto(cfg, data_proc, meta_proc);

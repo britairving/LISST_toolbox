@@ -600,6 +600,9 @@ while ~done_method
       end
     %% Use single background file for all data
     case 5 % SINGLE FILE
+      if ~iscell(zscat.file)
+        zscat.file = {zscat.file};
+      end
       cfg.proc_options.zscat_choice = ['single' wt 'zscat'];
       done_single_file = 0;
       if numel(zscat.file) == 1
