@@ -40,7 +40,7 @@ fprintf('INCORPORATE NEW INFO FROM SEQUOIA!!\n')
 % background. Again, you may save this as a background, or use it in Matlab
 % in the detailed procedure described in II.2.
 %%
-use_method = 1;  % 
+use_method = 2;  % 
 z_window   = 10; % m
 %% Try using an “in-situ background”
 % The fact that the in-situ transmission goes slightly above
@@ -68,8 +68,8 @@ datetick(ax(1),'x','keeplimits','keepticks')
 plot(ax(2),zscat.factory.tau.tau_m,zscat.factory.tau.depth_m);
 ax(2).YDir = 'rev'; grid(ax(2),'on'); hold(ax(2),'on');
 
-ax(1).YLim = [0.85 0.95];
-ax(2).XLim = ax(1).YLim;
+%ax(1).YLim = [0.85 0.95];
+%ax(2).XLim = ax(1).YLim;
 ax(2).YAxisLocation = 'right';
 ax(1).XTickLabelRotation = 45;
 
@@ -86,9 +86,13 @@ ax(2).Title.String  = 'In-situ background cast selection';
 % For now, just select the profile with the highest average transmission
 % between a depth range, then use the highest transmission point to
 % average and use as the background
-depth_range = [100 500];
-zrng = find(zscat.factory.tau.depth_m > depth_range(1) & zscat.factory.tau.depth_m < depth_range(2));
+if strcmp(cfg.project,'LISST_sn4041_2021_EXPORTS_JC214') || strcmp(cfg.project,'LISST_sn4025_2021_EXPORTS_DY131')
+  depth_range = [1500 2000];
+else
+  depth_range = [100 500];
+end
 
+zrng = find(zscat.factory.tau.depth_m > depth_range(1) & zscat.factory.tau.depth_m < depth_range(2));
 switch use_method
   case 1
     % Method 1: find cast with highest average transmission between depth ranges
@@ -102,9 +106,7 @@ switch use_method
     depth_at_tau_max = zscat.factory.tau.depth_m(idx_z_maxtau);
     fprintf('Maximum average tau values in %s\n',datname)
     fprintf('Maximum tau value at %d m\n',depth_at_tau_max)
-  case 2
-    fprintf('double check this method works/makes sense...\n')
-    keyboard
+  case 2  
     % find single highest transmission point
     [max1,~] = max(zscat.factory.tau.tau_m(:,zscat.factory.tau.depth_m > depth_range(1)),[],2);
     [~,imax2] = max(max1);
@@ -116,13 +118,14 @@ switch use_method
     depth_at_tau_max = zscat.factory.tau.depth_m(idx_z_maxtau);
     plot(ax(2),zscat.factory.tau.tau_m(imax2,idx_z_maxtau),zscat.factory.tau.depth_m(idx_z_maxtau),'ks','markerfacecolor','g','markersize',10);
     
-    [~,datname2,~] = fileparts(cfg.proc_options.datfile{imax2});
-    fprintf('Maximum tau values in %s at %d meter depth\n',datname2,depth_at_tau_max)
-    
+    [~,datname,~] = fileparts(cfg.proc_options.datfile{imax2});
+    fprintf('Maximum average tau values in %s\n',datname)
+    fprintf('Maximum tau value at %d m\n',depth_at_tau_max)
   otherwise
     fprintf('Not set up yet...\n')
     keyboard
 end
+
 if cfg.savefig
   figname = fullfile(cfg.path.dir_figs,[cfg.project '_background_insitu_cast_selection']);
   standard_printfig_lowrespng(figname)

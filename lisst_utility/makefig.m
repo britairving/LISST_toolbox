@@ -20,6 +20,8 @@ fig = figure(n);
 fig.Units = 'inches';
 if exist('uname','var') && strcmp(uname,'bkirving')
   fig.Position = [21 0.5104 17 9.4479];
+elseif exist('uname','var') && strcmp(uname,'Brita Irving')
+  fig.Position = [11.0833    0.4271    8.9271   10.5000];
 else
   fig.Position = [1.3021    0.5104   14.0312    7.2479];
 end

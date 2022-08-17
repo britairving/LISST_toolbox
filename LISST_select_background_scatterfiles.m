@@ -331,44 +331,65 @@ while ~done
     done  = 1;
   end
 end %% WHILE ~DONE
-% Delete other plots
-rm_these = find(~contains(zscat_types,zscat_types{chc_type}));
-for nrm = 1:numel(rm_these)
-  rmtype = zscat_types{rm_these(nrm)};
-  delete(h1.(rmtype));
-  delete(h2.(rmtype));
-  delete(h3.(rmtype));
-  h1 = rmfield(h1,rmtype);
-  h2 = rmfield(h2,rmtype);
-  h3 = rmfield(h3,rmtype);
-end
-% Renumber legend
-try pause(1);end
-remove_plots = [];
-for np = 1:numel(h1.(wt))
-  if contains(h1.(wt)(np).DisplayName,{'median' 'average'})
-    remove_plots = [remove_plots; np];
+
+%% Delete other plots
+try
+  rm_these = find(~contains(zscat_types,zscat_types{chc_type}));
+  for nrm = 1:numel(rm_these)
+    rmtype = zscat_types{rm_these(nrm)};
+    delete(h1.(rmtype));
+    delete(h2.(rmtype));
+    delete(h3.(rmtype));
+    h1 = rmfield(h1,rmtype);
+    h2 = rmfield(h2,rmtype);
+    h3 = rmfield(h3,rmtype);
   end
-  idx  = strfind(h1.(wt)(np).DisplayName,'>');
-  lstr = h1.(wt)(np).DisplayName(1:idx);
-  h1.(wt)(np).DisplayName = strrep(h1.(wt)(np).DisplayName,lstr,['<' num2str(np) '>']);
-  h2.(wt)(np).DisplayName = strrep(h2.(wt)(np).DisplayName,lstr,['<' num2str(np) '>']);
-  h3.(wt)(np).DisplayName = strrep(h3.(wt)(np).DisplayName,lstr,['<' num2str(np) '>']);
+catch
+  keyboard
 end
 
-delete(h1.(wt)(remove_plots));
-delete(h2.(wt)(remove_plots));
-delete(h3.(wt)(remove_plots));
+%% Renumber legend
+try
+  try
+    pause(1);
+  end
+  remove_plots = [];
+  for np = 1:numel(h1.(wt))
+    if contains(h1.(wt)(np).DisplayName,{'median' 'average'})
+      remove_plots = [remove_plots; np];
+    end
+    idx  = strfind(h1.(wt)(np).DisplayName,'>');
+    lstr = h1.(wt)(np).DisplayName(1:idx);
+    h1.(wt)(np).DisplayName = strrep(h1.(wt)(np).DisplayName,lstr,['<' num2str(np) '>']);
+    h2.(wt)(np).DisplayName = strrep(h2.(wt)(np).DisplayName,lstr,['<' num2str(np) '>']);
+    h3.(wt)(np).DisplayName = strrep(h3.(wt)(np).DisplayName,lstr,['<' num2str(np) '>']);
+  end
+catch
+  keyboard
+end
+try
+  delete(h1.(wt)(remove_plots));
+  delete(h2.(wt)(remove_plots));
+  delete(h3.(wt)(remove_plots));
+catch
+  keyboard
+end
 % reset axis limits
 try
   ax2.YLim(1) = min(nanmin([zscat.tau.surf]));
   ax3.XLim(1) = min(nanmin([zscat.tau.surf]));
 end
+
 %% Visually highlight selected background measurements
-if numel(zscat.file) > 1
+
+if iscell(zscat.file) && numel(zscat.file) > 1
   
   fprintf(' Do you want to highlight any of the background measurements on the plot?\n')
+  try
   chc1 = input('  Enter choice <1/0> ');
+  catch
+    keyboard
+  end
   if chc1
     while chc1
       for np = 1:numel(h1.(wt))

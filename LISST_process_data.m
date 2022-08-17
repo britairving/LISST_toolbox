@@ -54,6 +54,7 @@ else
   [cfg, data_proc] = LISST_select_background_scatterfiles(cfg,data_proc);
 end
 
+keyboard
 %% 4 | Pull out size bin information for LISST instrument   
 % Depends on instrument, inversion type and laser color
 cfg.inst.bins = LISST_bin_sizes(cfg.inst.type2);

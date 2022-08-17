@@ -4,10 +4,13 @@ function ax = makefig_subplots(subplotsx,subplotsy)
 
 %parameters for figure and panel size
 % make new figure
-try 
+try
   uname = char(java.lang.System.getProperty('user.name'));
 catch
-  
+  plotheight = 22;
+  plotwidth  = 17;
+  pos_x      = 0.80;
+  pos_y      = 9.5;
 end
 if exist('uname','var')
   switch uname
@@ -21,11 +24,16 @@ if exist('uname','var')
       plotwidth  = 17;
       pos_x      = 0.80;
       pos_y      = 9.5;
-     case 'Stephanie'
+    case 'Stephanie'
       plotheight = 22;
       plotwidth  = 17;
       pos_x      = 0.80;
-      pos_y      = 9.5; 
+      pos_y      = 9.5;
+    case 'Brita Irving'
+      plotheight = 8.9;
+      plotwidth  = 10.5;
+      pos_x      = 0.42;
+      pos_y      = 11.08;
   end
 else
   plotheight = 22;
@@ -34,16 +42,16 @@ else
   pos_y      = 9.5;
 end
 if nargin == 0
-subplotsx = 3;
-subplotsy = 5;
+  subplotsx = 3;
+  subplotsy = 5;
 end
 leftedge=1.2;
-rightedge=0.6;   
+rightedge=0.6;
 topedge=1.5;
 bottomedge=1.5;
 spacex=0.4;
 spacey=0.3;
-fontsize=14;    
+fontsize=14;
 sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey);
 %setting the Matlab figure
 % make new figure
@@ -57,9 +65,9 @@ fig.Units             = 'inches';
 fig.Position          = [plotheight pos_x plotwidth pos_y];
 fig.PaperPositionMode = 'auto';
 fig.PaperOrientation  = 'portrait';
-fig.PaperSize         =  [plotwidth plotheight];
+fig.PaperSize         = [plotwidth plotheight];
 fig.PaperPosition     = [0 0 plotwidth plotheight];
- 
+
 %loop to create axes
 for i=1:subplotsx
   for ii=1:subplotsy
