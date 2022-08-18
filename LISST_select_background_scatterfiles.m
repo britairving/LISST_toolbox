@@ -55,7 +55,6 @@ cfg.inst.flref = zscat.factory.data(36); %
 znm_all = {zscat.factory.file};
 zsc_all = zscat.factory.data;
 
-
 if isfield(cfg,'background')
   % initialize variable
   rm_water_type = {};
@@ -166,11 +165,10 @@ h1 = struct();
 h2 = struct();
 h3 = struct();
 
-% Create figure and plot factory
-makefig; 
-makefig; ax1 = gca;  % Backscatter value per bin
-makefig; ax2 = gca;  % tau vs time
-makefig; ax3 = gca;  % tau vs depth
+% Create figure and plot factory 
+makefig; adjust_figure_to_screen(gcf); ax1 = gca;  % Backscatter value per bin
+makefig; adjust_figure_to_screen(gcf); ax2 = gca;  % tau vs time
+makefig; adjust_figure_to_screen(gcf); ax3 = gca;  % tau vs depth
 
 % Plot factor backscatter
 h1.factory = plot(ax1,1:32,zscat.factory.data(1:32),'k-','LineWidth',3,'DisplayName',['Factory ' datestr(zscat.factory.date,'yyyy-mm-dd')]);
@@ -367,6 +365,7 @@ try
 catch
   keyboard
 end
+
 try
   delete(h1.(wt)(remove_plots));
   delete(h2.(wt)(remove_plots));
@@ -374,6 +373,7 @@ try
 catch
   keyboard
 end
+
 % reset axis limits
 try
   ax2.YLim(1) = min(nanmin([zscat.tau.surf]));
@@ -383,7 +383,6 @@ end
 %% Visually highlight selected background measurements
 
 if iscell(zscat.file) && numel(zscat.file) > 1
-  
   fprintf(' Do you want to highlight any of the background measurements on the plot?\n')
   try
   chc1 = input('  Enter choice <1/0> ');
@@ -416,8 +415,7 @@ if iscell(zscat.file) && numel(zscat.file) > 1
     chc1 = 1;
   end % highlight selected backscatter files on plot
 end
-
-
+keyboard
 %% Remove files
 fprintf(' \n')
 fprintf(' Do you want to remove any backgrounds from consideration?\n');

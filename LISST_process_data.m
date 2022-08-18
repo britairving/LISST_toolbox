@@ -54,7 +54,6 @@ else
   [cfg, data_proc] = LISST_select_background_scatterfiles(cfg,data_proc);
 end
 
-keyboard
 %% 4 | Pull out size bin information for LISST instrument   
 % Depends on instrument, inversion type and laser color
 cfg.inst.bins = LISST_bin_sizes(cfg.inst.type2);
@@ -78,7 +77,7 @@ angles = flipud(angles); % change so SizebinNumber goes from 1:32 rather than Ri
 % Only store the angles for the specific type of lisst instrument
 gd = contains(angles.Properties.VariableNames,{'RingNumber' 'SizebinNumber' ['type' cfg.inst.typeX]});
 angles = angles(:,gd);
-
+keyboard
 %% 6 | Define constants
 % needed for invert script
 SHARPEN     = 0; % 1 causes the routine to check if the size distribution is narrow and, if so, increases the number of inversions. Use this setting if you expect a narrow size distribution (e.g. if you are analyzing narrow-size standard particles).

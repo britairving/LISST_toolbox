@@ -17,6 +17,8 @@ function LISST_processing_workflow
 %  Authors:
 %    Brita K Irving  <bkirving@alaska.edu>
 %   | Starting point
+%%
+close all
 %% 0 | USER INPUT: project and year
 cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
 % cfg.project      = 'LISST_sn4041_2021_EXPORTS_JC214';
@@ -27,13 +29,14 @@ if ismac
   cfg.path.base    = '/Volumes/BritablueHD/LISST_Data_Structured'; % Path to where LISST_Data folder
   cfg.path.toolbox = '/Users/bkirving/Documents/MATLAB/LISST_toolbox/'; % Path to LISST toolbox
 else
-  %cfg.path.base    = 'F:\LISST_Data_Structured\'; % Path to where LISST_Data folder
-  %cfg.path.toolbox = 'D:\MATLAB\LISST_toolbox\'; % Path to LISST toolbox
-  cfg.path.toolbox = 'C:\Users\birving\Documents\MATLAB\LISST_toolbox'; % Surface
-  cfg.path.base    = 'D:\LISST_Data_Structured\';
+  cfg.path.base    = 'F:\LISST_Data_Structured\'; % Path to where LISST_Data folder
+  cfg.path.toolbox = 'D:\MATLAB\LISST_toolbox\'; % Path to LISST toolbox
+  %cfg.path.toolbox = 'C:\Users\birving\Documents\MATLAB\LISST_toolbox'; % Surface
+  %cfg.path.base    = 'D:\LISST_Data_Structured\';
 end
-
-base_path = cfg.path.base;
+% Make sure that operating system specific paths are kept, even if file is
+% loaded. 
+base_path   = cfg.path.base;
 toolboxpath = cfg.path.toolbox;
 %% 0 | Configure processing
 skip_to_proc =  1;    % 1 = Loads preprocessed file, then jumps to processing
