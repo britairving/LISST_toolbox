@@ -2,25 +2,16 @@ function LISST_plot_EXPORTSNA_EPOCH_compare_sb
 if ismac
   base_directory = '/Volumes/toshiba1/LISST_Data_Structured/';
 else
-  base_directory = 'X:\LISST_Data_Structured\';
+  base_directory = 'F:\LISST_Data_Structured\';
 end
 test_binned = 1;
-milliq_compare = 1;
 
 if test_binned
-  DY_sb = fullfile(base_directory,'LISST_sn4025_2021_EXPORTS_DY131/submit/L2/EXPORTS-EXPORTSNA_LISST-Deep_binned_survey_20210504-20210529_R0.sb');
-  if milliq_compare
-    JC_sb = 'D:\LISST_Data_Structured\LISST_sn4041_2021_EXPORTS_JC214\submit\L2\EXPORTS-EXPORTSNA_LISST-Deep_binned_process_20210504-20210529_R0.sb';
-  else
-    JC_sb = fullfile(base_directory,'LISST_sn4041_2021_EXPORTS_JC214/submit/L2/EXPORTS-EXPORTSNA_LISST-Deep_binned_process_20210504-20210529_R0.sb');
-  end
+  DY_sb = fullfile(base_directory,'LISST_sn4025_2021_EXPORTS_DY131','submit','L2','EXPORTS-EXPORTSNA_LISST-Deep_binned_survey_20210504-20210529_R0.sb');
+  JC_sb = fullfile(base_directory,'LISST_sn4041_2021_EXPORTS_JC214','submit','L2','EXPORTS-EXPORTSNA_LISST-Deep_binned_process_20210504-20210529_R0.sb');
 else
-  DY_sb = fullfile(base_directory,'LISST_sn4025_2021_EXPORTS_DY131/submit/L2/EXPORTS-EXPORTSNA_LISST-Deep_survey_20210504-20210529_R0.sb');
-  if milliq_compare
-    JC_sb = fullfile(base_directory,'LISST_sn4041_2021_EXPORTS_JC214/submit/L2/zscat_milliq/EXPORTS-EXPORTSNA_LISST-Deep_process_20210504-20210529_R0.sb');
-  else
-    JC_sb = fullfile(base_directory,'LISST_sn4041_2021_EXPORTS_JC214/submit/L2/EXPORTS-EXPORTSNA_LISST-Deep_process_20210504-20210529_R0.sb');
-  end
+  DY_sb = fullfile(base_directory,'LISST_sn4025_2021_EXPORTS_DY131','submit','L2','EXPORTS-EXPORTSNA_LISST-Deep_survey_20210504-20210529_R0.sb');
+  JC_sb = fullfile(base_directory,'LISST_sn4041_2021_EXPORTS_JC214','submit','L2','EXPORTS-EXPORTSNA_LISST-Deep_process_20210504-20210529_R0.sb');
 end
 
 
@@ -144,8 +135,8 @@ for epoch = 1:3
   if milliq_compare
     figname = [figname '_milliqcompare'];
   end
-  standard_printfig_highrespng(figname)
-  
+  %standard_printfig_highrespng(figname)
+  keyboard
 end
 
 end

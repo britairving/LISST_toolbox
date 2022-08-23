@@ -20,8 +20,8 @@ function LISST_processing_workflow
 %%
 close all
 %% 0 | USER INPUT: project and year
-cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
-% cfg.project      = 'LISST_sn4041_2021_EXPORTS_JC214';
+% cfg.project      = 'LISST_sn4025_2021_EXPORTS_DY131';
+cfg.project      = 'LISST_sn4041_2021_EXPORTS_JC214';
 cfg.year         = 2021;                                      % year when first measurement was taken
 cfg.testing      = 0;                                         % 0 = processes all available DAT files, 1 = processes first 10 DAT files
 cfg.savefig      = 0;                                         % 0 = does not save figures, 1 = saves figures to cfg.path.dir_figs

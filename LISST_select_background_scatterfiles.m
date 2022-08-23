@@ -415,7 +415,7 @@ if iscell(zscat.file) && numel(zscat.file) > 1
     chc1 = 1;
   end % highlight selected backscatter files on plot
 end
-keyboard
+
 %% Remove files
 fprintf(' \n')
 fprintf(' Do you want to remove any backgrounds from consideration?\n');

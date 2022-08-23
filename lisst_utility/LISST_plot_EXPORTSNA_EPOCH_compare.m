@@ -4,16 +4,18 @@ function LISST_plot_EXPORTSNA_EPOCH_compare(JC,DY)
 %%
 %% Spherical average filtered seawater background scatter files 
 ftypes = {'JamesCook' 'Discovery'}; % file type 
-ptype  = 'spherical MilliQ'; % processing type
+ptype  = 'spherical medianMQWvsFactoryZSCAT'; % processing type
 if nargin < 2
   DY = load('F:\LISST_Data_Structured\LISST_sn4025_2021_EXPORTS_DY131\proc\LISST_sn4025_2021_EXPORTS_DY131_proc_spherical_gridded.mat');
-  JC = load('F:\LISST_Data_Structured\LISST_sn4041_2021_EXPORTS_JC214\proc\LISST_sn4041_2021_EXPORTS_JC214_proc_spherical_gridded.mat'); 
+  JC = load('F:\LISST_Data_Structured\LISST_sn4041_2021_EXPORTS_JC214\proc\LISST_sn4041_2021_EXPORTS_JC214_proc_spherical_gridded.mat');
+  %   DY = load('C:\Users\Brita Irving\Downloads\drive-download-20220818T013420Z-001\LISST_sn4025_2021_EXPORTS_DY131_proc_spherical_gridded.mat');
+  %   JC = load('C:\Users\Brita Irving\Downloads\drive-download-20220818T013420Z-001\LISST_sn4041_2021_EXPORTS_JC214_proc_spherical_gridded.mat');
 end
 %% 0 | Set up script options
 depth_var = 'depth';% 'depth_orig'; % 'depth'
 date_var  = 'date'; % 'date_orig';  % 'date'
 script_opt.axcolor = [0.8 0.80 0.8];
-script_opt.savefig = 0;
+script_opt.savefig = 1;
 script_opt.savedir = 'F:\LISST_Data_Structured\';%'F:\LISST_Data\';
 
 DYcasts = [19 31 82 94]; % Disovery found on "Discovery Matchups.xlsx"
@@ -95,7 +97,7 @@ for epoch = 1:numel(DYcasts)
     figname = fullfile(script_opt.savedir,['LISST_EXPORTSNA_compare_' ptype '_Epoch' num2str(epoch)]);
     standard_printfig_highrespng(figname)
   else
-    keyboard
+    pause
   end
 end
 
